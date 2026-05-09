@@ -1,0 +1,192 @@
+import api from '@/services/api'
+import type { PaginatedData } from '@/types/api.types'
+
+export interface AdminStats {
+  total_users: number
+  new_users_7d: number
+  new_users_30d: number
+  total_revenue: number
+  revenue_this_month: number
+  total_readings: number
+  readings_today: number
+  pending_orders: number
+}
+
+export interface AdminUser {
+  id: number
+  full_name: string
+  email: string
+  phone: string | null
+  role: 'user' | 'admin'
+  credits_balance: number
+  credits_expires_at: string | null
+  credits_status: 'active' | 'frozen' | 'empty'
+  is_active: number
+  created_at: string
+}
+
+export interface AdminReading {
+  id: number
+  user_id: number | null
+  module: string
+  is_free: number
+  credits_used: number
+  created_at: string
+  input_data: string
+  result_data: string
+  full_name?: string
+  email?: string
+}
+
+export interface AdminOrder {
+  id: number
+  user_id: number
+  full_name: string
+  email: string
+  package_name: string | null
+  credits: number
+  amount: number
+  topup_code: string
+  status: string
+  created_at: string
+  paid_at: string | null
+}
+
+export interface CreditPackage {
+  id: number
+  name: string
+  credits: number
+  price: number
+  validity_days: number
+  is_active: number
+  sort_order: number
+}
+
+export interface AIModel {
+  id: number
+  name: string
+  provider: string
+  model_id: string
+  is_active: number
+  is_default: number
+  priority: number
+  max_tokens: number
+  temperature: number
+  total_tokens: number
+  created_at: string
+}
+
+export const adminService = {
+  async getDashboard(): Promise<AdminStats> {
+    const { data } = await api.get('/admin/dashboard')
+    return data.data
+  },
+
+  async getUsers(params?: {
+    page?: number
+    limit?: number
+    search?: string
+    is_active?: number
+  }): Promise<PaginatedData<AdminUser>> {
+    const { data } = await api.get('/admin/users', { params })
+    return data.data
+  },
+
+  async getUserDetail(id: number): Promise<AdminUser> {
+    const { data } = await api.get(`/admin/users/${id}`)
+    return data.data
+  },
+
+  async updateUser(id: number, dto: { is_active?: number; role?: string }): Promise<AdminUser> {
+    const { data } = await api.put(`/admin/users/${id}`, dto)
+    return data.data
+  },
+
+  async deleteUser(id: number): Promise<void> {
+    await api.delete(`/admin/users/${id}`)
+  },
+
+  async grantCredits(id: number, dto: { credits: number; reason: string }): Promise<void> {
+    await api.post(`/admin/users/${id}/grant-credits`, dto)
+  },
+
+  async getReadings(params?: {
+    page?: number
+    limit?: number
+    module?: string
+    is_free?: number
+  }): Promise<PaginatedData<AdminReading>> {
+    const { data } = await api.get('/admin/readings', { params })
+    return data.data
+  },
+
+  async getOrders(params?: {
+    page?: number
+    limit?: number
+    status?: string
+  }): Promise<PaginatedData<AdminOrder>> {
+    const { data } = await api.get('/admin/credit-orders', { params })
+    return data.data
+  },
+
+  async confirmOrder(id: number): Promise<void> {
+    await api.put(`/admin/credit-orders/${id}/confirm`)
+  },
+
+  async getPackages(): Promise<CreditPackage[]> {
+    const { data } = await api.get('/admin/credit-packages')
+    return data.data
+  },
+
+  async createPackage(dto: Omit<CreditPackage, 'id' | 'sort_order'>): Promise<CreditPackage> {
+    const { data } = await api.post('/admin/credit-packages', dto)
+    return data.data
+  },
+
+  async updatePackage(id: number, dto: Partial<CreditPackage>): Promise<CreditPackage> {
+    const { data } = await api.put(`/admin/credit-packages/${id}`, dto)
+    return data.data
+  },
+
+  async deletePackage(id: number): Promise<void> {
+    await api.delete(`/admin/credit-packages/${id}`)
+  },
+
+  async getAIModels(): Promise<AIModel[]> {
+    const { data } = await api.get('/admin/ai-models')
+    return data.data
+  },
+
+  async fetchProviderModels(provider: string, apiKey: string): Promise<string[]> {
+    const { data } = await api.post('/admin/ai-models/fetch-models', { provider, api_key: apiKey })
+    return data.data.models
+  },
+
+  async createAIModel(dto: Record<string, unknown>): Promise<AIModel> {
+    const { data } = await api.post('/admin/ai-models', dto)
+    return data.data
+  },
+
+  async updateAIModel(id: number, dto: Record<string, unknown>): Promise<AIModel> {
+    const { data } = await api.put(`/admin/ai-models/${id}`, dto)
+    return data.data
+  },
+
+  async deleteAIModel(id: number): Promise<void> {
+    await api.delete(`/admin/ai-models/${id}`)
+  },
+
+  async testAIModel(id: number, dto: { prompt: string }): Promise<{ output: string; tokens_used: number }> {
+    const { data } = await api.post(`/admin/ai-models/${id}/test`, dto)
+    return data.data
+  },
+
+  async getSettings(): Promise<Record<string, string>> {
+    const { data } = await api.get('/admin/settings')
+    return data.data
+  },
+
+  async updateSettings(settings: Record<string, string>): Promise<void> {
+    await api.put('/admin/settings', settings)
+  },
+}
