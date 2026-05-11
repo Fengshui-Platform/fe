@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { adminService } from '@/services/admin.service'
 import type { AdminUser } from '@/services/admin.service'
@@ -10,7 +10,6 @@ import AppSpinner from '@/components/common/AppSpinner.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppModal from '@/components/common/AppModal.vue'
-import AppInput from '@/components/common/AppInput.vue'
 
 const ui = useUIStore()
 const router = useRouter()

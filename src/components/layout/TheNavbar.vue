@@ -19,7 +19,6 @@ const creditsLabel = computed(() => {
   return 'Hết lượt'
 })
 
-const creditsVariant = computed(() => auth.user?.credits_status ?? 'default')
 
 async function logout() {
   try {

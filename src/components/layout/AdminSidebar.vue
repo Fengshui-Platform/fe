@@ -2,10 +2,7 @@
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { authService } from '@/services/auth.service'
-import { useUIStore } from '@/stores/ui'
-
 const auth = useAuthStore()
-const ui = useUIStore()
 const router = useRouter()
 
 const navItems = [

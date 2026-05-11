@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useRoute, RouterLink } from 'vue-router'
 import { authService } from '@/services/auth.service'
 import { type AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 
 const route = useRoute()
-const router = useRouter()
 
 const token = ref('')
 const newPassword = ref('')

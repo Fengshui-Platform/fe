@@ -105,7 +105,7 @@ onMounted(loadSettings)
       </div>
 
       <!-- Extra keys from DB not in meta -->
-      <template v-for="(val, key) in values" :key="key">
+      <template v-for="(_, key) in values" :key="key">
         <div
           v-if="!SETTINGS_META[key]"
           class="bg-bg-card border border-border-subtle rounded-2xl p-5 shadow-card"
