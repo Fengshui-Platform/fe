@@ -32,15 +32,22 @@ async function logout() {
 </script>
 
 <template>
-  <nav class="sticky top-0 z-40 bg-bg-card/80 backdrop-blur-md border-b border-border-subtle">
+  <nav class="sticky top-0 z-40 bg-bg-card/85 backdrop-blur-xl relative">
+    <!-- Celestial gradient bottom border -->
+    <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-mystic/60 via-40% to-transparent pointer-events-none" />
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
+
         <!-- Logo -->
-        <RouterLink to="/" class="flex items-center gap-2 group">
-          <span class="text-2xl">☯</span>
-          <span class="font-serif text-xl text-gold group-hover:drop-shadow-[0_0_8px_rgba(245,200,66,0.6)] transition-all">
-            Phong Thủy AI
-          </span>
+        <RouterLink to="/" class="flex items-center gap-2.5 group">
+          <span class="text-2xl animate-shimmer-gold select-none">☯</span>
+          <div class="flex flex-col leading-none">
+            <span class="font-serif font-semibold text-base text-gold group-hover:drop-shadow-[0_0_12px_rgba(245,200,66,0.7)] transition-all duration-300">
+              Phong Thuỷ Tâm Đức
+            </span>
+            <span class="text-[9px] text-text-muted tracking-widest uppercase mt-0.5">Thiên Cơ · Huyền Mệnh</span>
+          </div>
         </RouterLink>
 
         <!-- Desktop nav -->
@@ -48,9 +55,10 @@ async function logout() {
           <RouterLink
             v-if="auth.isLoggedIn"
             to="/history"
-            class="text-sm text-text-secondary hover:text-text-primary transition-colors"
+            class="text-sm text-text-secondary hover:text-gold transition-colors relative group py-1"
           >
             Lịch sử
+            <span class="absolute -bottom-0.5 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 rounded-full" />
           </RouterLink>
 
           <!-- Guest -->
@@ -71,10 +79,10 @@ async function logout() {
 
           <!-- Logged in -->
           <template v-else>
-            <!-- Credits badge -->
-            <RouterLink to="/buy-credits" class="hover:opacity-80 transition-opacity">
-              <AppBadge :variant="creditsVariant as 'active' | 'frozen' | 'empty'">
-                ⚡ {{ creditsLabel }}
+            <!-- Credits badge — chỉ hiện khi đang active -->
+            <RouterLink v-if="auth.hasActiveCredits" to="/buy-credits" class="hover:opacity-80 transition-opacity">
+              <AppBadge variant="active">
+                ✦ {{ creditsLabel }}
               </AppBadge>
             </RouterLink>
 
@@ -84,11 +92,11 @@ async function logout() {
                 @click="menuOpen = !menuOpen"
                 class="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
               >
-                <div class="w-8 h-8 rounded-full bg-mystic/30 border border-mystic/40 flex items-center justify-center text-mystic-glow font-semibold text-sm overflow-hidden">
+                <div class="w-8 h-8 rounded-full bg-mystic/20 border border-mystic/50 flex items-center justify-center text-mystic-glow font-semibold text-sm overflow-hidden ring-1 ring-mystic/20 ring-offset-1 ring-offset-bg-card">
                   <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" :alt="auth.user.full_name" class="w-full h-full object-cover" />
                   <span v-else>{{ auth.user?.full_name?.[0]?.toUpperCase() }}</span>
                 </div>
-                <svg class="w-4 h-4 transition-transform" :class="menuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-text-muted transition-transform duration-200" :class="menuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </button>
@@ -98,8 +106,11 @@ async function logout() {
                   v-if="menuOpen"
                   @click.stop
                   v-click-outside="() => menuOpen = false"
-                  class="absolute right-0 top-full mt-2 w-48 bg-bg-card border border-border-glow rounded-xl shadow-glow-mystic overflow-hidden"
+                  class="absolute right-0 top-full mt-2 w-52 bg-bg-card/95 backdrop-blur-xl border border-border-glow rounded-xl shadow-glow-mystic overflow-hidden"
                 >
+                  <!-- Gradient top accent -->
+                  <div class="h-0.5 bg-gradient-to-r from-gold/60 via-mystic to-neon/60" />
+
                   <div class="px-4 py-3 border-b border-border-subtle">
                     <p class="text-sm font-medium text-text-primary truncate">{{ auth.user?.full_name }}</p>
                     <p class="text-xs text-text-muted truncate">{{ auth.user?.email }}</p>
@@ -107,31 +118,38 @@ async function logout() {
                   <RouterLink
                     to="/profile"
                     @click="menuOpen = false"
-                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-secondary hover:text-gold hover:bg-bg-elevated transition-colors"
                   >
-                    👤 Hồ sơ
+                    <span>👤</span> Hồ sơ
                   </RouterLink>
                   <RouterLink
                     to="/buy-credits"
                     @click="menuOpen = false"
-                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-secondary hover:text-gold hover:bg-bg-elevated transition-colors"
                   >
-                    ⚡ Mua lượt
+                    <span>✦</span> Mua lượt
+                  </RouterLink>
+                  <RouterLink
+                    to="/history?tab=orders"
+                    @click="menuOpen = false"
+                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-secondary hover:text-gold hover:bg-bg-elevated transition-colors"
+                  >
+                    <span>💳</span> Lịch sử giao dịch
                   </RouterLink>
                   <RouterLink
                     v-if="auth.isAdmin"
                     to="/admin"
                     @click="menuOpen = false"
-                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-mystic-glow hover:bg-bg-elevated transition-colors"
+                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-mystic-glow hover:bg-bg-elevated transition-colors"
                   >
-                    🛡 Admin
+                    <span>🛡</span> Admin
                   </RouterLink>
-                  <hr class="border-border-subtle mx-4" />
+                  <hr class="border-border-subtle mx-3" />
                   <button
                     @click="logout(); menuOpen = false"
-                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                    class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
                   >
-                    🚪 Đăng xuất
+                    <span>🚪</span> Đăng xuất
                   </button>
                 </div>
               </Transition>
@@ -142,7 +160,7 @@ async function logout() {
         <!-- Mobile hamburger -->
         <button
           @click="menuOpen = !menuOpen"
-          class="md:hidden text-text-secondary hover:text-text-primary p-2"
+          class="md:hidden text-text-secondary hover:text-gold p-2 transition-colors"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -153,16 +171,52 @@ async function logout() {
 
       <!-- Mobile menu -->
       <Transition name="slide">
-        <div v-if="menuOpen" class="md:hidden pb-4 space-y-2 border-t border-border-subtle pt-3">
-          <RouterLink to="/history" @click="menuOpen=false" class="block py-2 text-sm text-text-secondary hover:text-text-primary">Lịch sử</RouterLink>
+        <div v-if="menuOpen" class="md:hidden pb-4 space-y-1 border-t border-border-subtle pt-3">
+          <RouterLink
+            to="/history"
+            @click="menuOpen=false"
+            class="flex items-center gap-2 py-2.5 px-3 text-sm text-text-secondary hover:text-gold rounded-lg hover:bg-bg-elevated transition-colors"
+          >
+            ☯ Lịch sử
+          </RouterLink>
           <template v-if="!auth.isLoggedIn">
-            <RouterLink to="/login" @click="menuOpen=false" class="block py-2 text-sm text-text-secondary">Đăng nhập</RouterLink>
-            <RouterLink to="/register" @click="menuOpen=false" class="block py-2 text-sm text-gold">Đăng ký</RouterLink>
+            <RouterLink
+              to="/login"
+              @click="menuOpen=false"
+              class="flex items-center gap-2 py-2.5 px-3 text-sm text-text-secondary hover:text-gold rounded-lg hover:bg-bg-elevated transition-colors"
+            >
+              Đăng nhập
+            </RouterLink>
+            <RouterLink
+              to="/register"
+              @click="menuOpen=false"
+              class="flex items-center gap-2 py-2.5 px-3 text-sm text-gold rounded-lg hover:bg-bg-elevated transition-colors"
+            >
+              ✦ Đăng ký
+            </RouterLink>
           </template>
           <template v-else>
-            <RouterLink to="/buy-credits" @click="menuOpen=false" class="block py-2 text-sm text-text-secondary">⚡ {{ creditsLabel }}</RouterLink>
-            <RouterLink to="/profile" @click="menuOpen=false" class="block py-2 text-sm text-text-secondary">👤 Hồ sơ</RouterLink>
-            <button @click="logout(); menuOpen=false" class="block py-2 text-sm text-red-400 w-full text-left">🚪 Đăng xuất</button>
+            <RouterLink
+              v-if="auth.hasActiveCredits"
+              to="/buy-credits"
+              @click="menuOpen=false"
+              class="flex items-center gap-2 py-2.5 px-3 text-sm text-text-secondary hover:text-gold rounded-lg hover:bg-bg-elevated transition-colors"
+            >
+              ✦ {{ creditsLabel }}
+            </RouterLink>
+            <RouterLink
+              to="/profile"
+              @click="menuOpen=false"
+              class="flex items-center gap-2 py-2.5 px-3 text-sm text-text-secondary hover:text-gold rounded-lg hover:bg-bg-elevated transition-colors"
+            >
+              👤 Hồ sơ
+            </RouterLink>
+            <button
+              @click="logout(); menuOpen=false"
+              class="w-full flex items-center gap-2 py-2.5 px-3 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+            >
+              🚪 Đăng xuất
+            </button>
           </template>
         </div>
       </Transition>

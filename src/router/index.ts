@@ -26,11 +26,12 @@ const router = createRouter({
       path: '/',
       component: UserLayout,
       children: [
-        { path: '',             name: 'Home',        component: () => import('@/pages/HomePage.vue') },
-        { path: '/result',       name: 'Result',      component: () => import('@/pages/ResultPage.vue') },
-        { path: '/buy-credits',  name: 'BuyCredits',  component: () => import('@/pages/BuyCreditsPage.vue'),  meta: { requiresAuth: true } },
-        { path: '/history',      name: 'History',     component: () => import('@/pages/HistoryPage.vue'),     meta: { requiresAuth: true } },
-        { path: '/profile',      name: 'Profile',     component: () => import('@/pages/ProfilePage.vue'),     meta: { requiresAuth: true } },
+        { path: '',                  name: 'Home',        component: () => import('@/pages/HomePage.vue') },
+        { path: '/result',           name: 'Result',      component: () => import('@/pages/ResultPage.vue') },
+        { path: '/reading/:module',  name: 'Reading',     component: () => import('@/pages/ReadingPage.vue'), meta: { requiresAuth: true } },
+        { path: '/buy-credits',      name: 'BuyCredits',  component: () => import('@/pages/BuyCreditsPage.vue'), meta: { requiresAuth: true } },
+        { path: '/history',          name: 'History',     component: () => import('@/pages/HistoryPage.vue'),    meta: { requiresAuth: true } },
+        { path: '/profile',          name: 'Profile',     component: () => import('@/pages/ProfilePage.vue'),    meta: { requiresAuth: true } },
       ],
     },
 

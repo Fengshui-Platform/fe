@@ -78,23 +78,25 @@ interface ParsedResult {
   sections?: Record<string, ResultSection>
 }
 
-const parsedResult = computed<ParsedResult | null>(() => {
-  if (!selectedReading.value?.result_data) return null
-  try {
-    return JSON.parse(selectedReading.value.result_data) as ParsedResult
-  } catch {
-    return null
-  }
-})
+function parseField<T>(field: unknown): T | null {
+  if (!field) return null
+  if (typeof field === 'object') return field as T
+  try { return JSON.parse(field as string) as T } catch { return null }
+}
 
-const parsedInput = computed<Record<string, string> | null>(() => {
-  if (!selectedReading.value?.input_data) return null
-  try {
-    return JSON.parse(selectedReading.value.input_data) as Record<string, string>
-  } catch {
-    return null
-  }
-})
+function rawDisplay(field: unknown): string {
+  if (!field) return ''
+  if (typeof field === 'object') return JSON.stringify(field, null, 2)
+  return String(field)
+}
+
+const parsedResult = computed<ParsedResult | null>(() =>
+  parseField<ParsedResult>(selectedReading.value?.result_data)
+)
+
+const parsedInput = computed<Record<string, string> | null>(() =>
+  parseField<Record<string, string>>(selectedReading.value?.input_data)
+)
 
 function asArray(v: unknown): string[] {
   return Array.isArray(v) ? v.map(String) : []
@@ -154,6 +156,7 @@ onMounted(loadReadings)
                 <th class="text-left px-4 py-3 text-text-muted font-medium">User</th>
                 <th class="text-left px-4 py-3 text-text-muted font-medium">Module</th>
                 <th class="text-left px-4 py-3 text-text-muted font-medium">Loại</th>
+                <th class="text-left px-4 py-3 text-text-muted font-medium">IP</th>
                 <th class="text-left px-4 py-3 text-text-muted font-medium">Thời gian</th>
                 <th class="text-left px-4 py-3 text-text-muted font-medium">Hành động</th>
               </tr>
@@ -179,6 +182,7 @@ onMounted(loadReadings)
                     {{ reading.is_free ? 'Miễn phí' : `Trả phí (${reading.credits_used})` }}
                   </AppBadge>
                 </td>
+                <td class="px-4 py-3 text-text-muted font-mono text-xs">{{ reading.ip_address ?? '—' }}</td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ formatDateTime(reading.created_at) }}</td>
                 <td class="px-4 py-3">
                   <AppButton variant="ghost" size="sm" @click="viewDetail(reading)">Xem chi tiết</AppButton>
@@ -219,10 +223,10 @@ onMounted(loadReadings)
           </div>
         </div>
 
-        <!-- Input data -->
+        <!-- Input data: parsed grid + raw JSON -->
         <div v-if="parsedInput">
           <p class="text-sm font-medium text-text-secondary mb-2">Dữ liệu đầu vào</p>
-          <div class="bg-bg-surface border border-border-subtle rounded-xl p-4 grid grid-cols-2 gap-x-6 gap-y-2">
+          <div class="bg-bg-surface border border-border-subtle rounded-xl p-4 grid grid-cols-2 gap-x-6 gap-y-2 mb-2">
             <template v-for="(val, key) in parsedInput" :key="key">
               <div>
                 <p class="text-xs text-text-muted capitalize">{{ String(key).replace(/_/g, ' ') }}</p>
@@ -230,6 +234,14 @@ onMounted(loadReadings)
               </div>
             </template>
           </div>
+          <details class="group">
+            <summary class="text-xs text-text-muted cursor-pointer hover:text-text-secondary select-none">Raw JSON</summary>
+            <pre class="mt-1 text-xs text-text-secondary overflow-auto max-h-32 bg-bg-surface p-3 rounded-xl border border-border-subtle">{{ rawDisplay(selectedReading.input_data) }}</pre>
+          </details>
+        </div>
+        <div v-else>
+          <p class="text-sm font-medium text-text-secondary mb-2">Dữ liệu đầu vào</p>
+          <pre class="text-xs text-text-secondary overflow-auto max-h-32 bg-bg-surface p-3 rounded-xl border border-border-subtle">{{ rawDisplay(selectedReading.input_data) }}</pre>
         </div>
 
         <!-- Result -->
@@ -306,7 +318,7 @@ onMounted(loadReadings)
         <!-- Fallback raw if parse failed -->
         <div v-else>
           <p class="text-sm font-medium text-text-secondary mb-2">Kết quả (raw)</p>
-          <pre class="text-xs text-text-secondary overflow-auto max-h-64 bg-bg-surface p-3 rounded-xl border border-border-subtle">{{ selectedReading.result_data }}</pre>
+          <pre class="text-xs text-text-secondary overflow-auto max-h-64 bg-bg-surface p-3 rounded-xl border border-border-subtle">{{ rawDisplay(selectedReading.result_data) }}</pre>
         </div>
 
       </div>
