@@ -4,7 +4,6 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useReadingStore } from '@/stores/reading'
 import { useAuthStore } from '@/stores/auth'
 import AppButton from '@/components/common/AppButton.vue'
-import AppBadge from '@/components/common/AppBadge.vue'
 import { MODULE_LABELS, MODULE_ICONS, type ReadingModule } from '@/types/reading.types'
 
 const router = useRouter()
@@ -354,7 +353,7 @@ function asString(v: unknown): string {
         <!-- Accent top bar -->
         <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" :style="{ background: `linear-gradient(90deg, transparent, ${zodiacInfo.accent}99, transparent)` }" />
         <!-- Bg glow blob -->
-        <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full blur-3xl pointer-events-none" :style="{ background: zodiacInfo.glow1 }" />
+        <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full blur-3xl pointer-events-none" :style="{ background: zodiacInfo.accent + '22' }" />
 
         <div class="flex items-center gap-5">
           <!-- Zodiac symbol seal -->
