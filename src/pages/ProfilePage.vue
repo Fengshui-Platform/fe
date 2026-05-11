@@ -10,7 +10,6 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
-import AppSpinner from '@/components/common/AppSpinner.vue'
 import { formatDate } from '@/utils/format'
 
 const router = useRouter()
@@ -79,44 +78,6 @@ async function changePassword() {
   }
 }
 
-// ── Avatar ────────────────────────────────────────────────────
-const fileInput = ref<HTMLInputElement | null>(null)
-const uploadingAvatar = ref(false)
-const deletingAvatar = ref(false)
-
-async function handleAvatarChange(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
-  if (file.size > 5 * 1024 * 1024) {
-    ui.toast.error('Ảnh tối đa 5MB')
-    return
-  }
-  uploadingAvatar.value = true
-  try {
-    const updated = await userService.uploadAvatar(file)
-    auth.setUser(updated)
-    ui.toast.success('Đã cập nhật ảnh đại diện')
-  } catch (err) {
-    const e = err as AxiosError<{ error?: { message?: string } }>
-    ui.toast.error(e.response?.data?.error?.message ?? 'Tải ảnh thất bại')
-  } finally {
-    uploadingAvatar.value = false
-    if (fileInput.value) fileInput.value.value = ''
-  }
-}
-
-async function removeAvatar() {
-  deletingAvatar.value = true
-  try {
-    const updated = await userService.deleteAvatar()
-    auth.setUser(updated)
-    ui.toast.success('Đã xóa ảnh đại diện')
-  } catch {
-    ui.toast.error('Xóa ảnh thất bại')
-  } finally {
-    deletingAvatar.value = false
-  }
-}
 
 // ── Delete account ────────────────────────────────────────────
 const showDeleteModal = ref(false)
@@ -172,9 +133,6 @@ async function deleteAccount() {
                 />
                 <span v-else class="font-serif text-3xl text-gold">{{ auth.user?.full_name?.charAt(0)?.toUpperCase() ?? '?' }}</span>
               </div>
-              <div v-if="uploadingAvatar || deletingAvatar" class="absolute inset-0 rounded-full bg-bg-base/70 flex items-center justify-center">
-                <AppSpinner size="sm" />
-              </div>
               <!-- Online dot -->
               <div class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-bg-card" />
             </div>
@@ -190,22 +148,6 @@ async function deleteAccount() {
             </AppBadge>
           </div>
 
-          <!-- Avatar actions -->
-          <div class="flex gap-2">
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              class="hidden"
-              @change="handleAvatarChange"
-            />
-            <AppButton size="sm" variant="secondary" :loading="uploadingAvatar" @click="fileInput?.click()">
-              Đổi ảnh
-            </AppButton>
-            <AppButton v-if="auth.user?.avatar_url" size="sm" variant="ghost" :loading="deletingAvatar" @click="removeAvatar">
-              Xóa ảnh
-            </AppButton>
-          </div>
         </div>
       </div>
 
