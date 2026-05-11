@@ -25,7 +25,7 @@ const formDefault = () => ({
   model_id: '',
   api_key: '',
   priority: 10,
-  max_tokens: 2048,
+  max_tokens: 4096,
   temperature: 0.7,
   is_default: false,
   is_active: true,
@@ -77,7 +77,7 @@ async function loadModels() {
   try {
     models.value = await adminService.getAIModels()
   } catch {
-    ui.toast.error('Không thể tải danh sách AI model')
+    ui.toast.error('Không thể tải danh sách mô hình')
   } finally {
     isLoading.value = false
   }
@@ -197,8 +197,8 @@ onMounted(loadModels)
   <div>
     <div class="mb-6 flex items-center justify-between">
       <div>
-        <h1 class="font-serif text-3xl text-gold mb-1">AI Models</h1>
-        <p class="text-text-muted text-sm">Quản lý các mô hình AI</p>
+        <h1 class="font-serif text-3xl text-gold mb-1">Mô hình ngôn ngữ</h1>
+        <p class="text-text-muted text-sm">Quản lý các mô hình ngôn ngữ và nhà cung cấp</p>
       </div>
       <AppButton variant="primary" @click="openCreate">+ Thêm model</AppButton>
     </div>
@@ -216,6 +216,7 @@ onMounted(loadModels)
               <th class="text-left px-4 py-3 text-text-muted font-medium">Provider</th>
               <th class="text-left px-4 py-3 text-text-muted font-medium">Model ID</th>
               <th class="text-right px-4 py-3 text-text-muted font-medium">Priority</th>
+              <th class="text-right px-4 py-3 text-text-muted font-medium">Max Tokens</th>
               <th class="text-left px-4 py-3 text-text-muted font-medium">Default</th>
               <th class="text-left px-4 py-3 text-text-muted font-medium">Trạng thái</th>
               <th class="text-right px-4 py-3 text-text-muted font-medium">Tokens dùng</th>
@@ -236,6 +237,12 @@ onMounted(loadModels)
                 <code class="text-xs font-mono text-text-secondary bg-bg-surface px-2 py-0.5 rounded">{{ model.model_id }}</code>
               </td>
               <td class="px-4 py-3 text-right text-text-secondary">{{ model.priority }}</td>
+              <td class="px-4 py-3 text-right">
+                <span
+                  class="font-mono text-xs"
+                  :class="model.max_tokens < 4096 ? 'text-amber-400' : 'text-text-secondary'"
+                >{{ model.max_tokens.toLocaleString() }}</span>
+              </td>
               <td class="px-4 py-3">
                 <AppBadge v-if="model.is_default" variant="gold" size="sm">Default</AppBadge>
                 <span v-else class="text-text-muted text-xs">—</span>
@@ -261,12 +268,12 @@ onMounted(loadModels)
       </div>
 
       <div v-if="models.length === 0" class="py-16 text-center text-text-muted">
-        Chưa có AI model nào
+        Chưa có mô hình nào
       </div>
     </div>
 
     <!-- Form modal -->
-    <AppModal :show="formModal" :title="editingModel ? 'Sửa AI Model' : 'Thêm AI Model'" size="lg" @close="formModal = false">
+    <AppModal :show="formModal" :title="editingModel ? 'Sửa mô hình' : 'Thêm mô hình'" size="lg" @close="formModal = false">
       <div class="space-y-4">
 
         <!-- Row 1: Tên + Provider -->
@@ -291,7 +298,7 @@ onMounted(loadModels)
           </div>
         </div>
 
-        <!-- Row 2: API Key + Fetch button (create) / just API Key (edit) -->
+        <!-- Row 2: API Key + Fetch button -->
         <div>
           <label class="block text-sm text-text-secondary mb-1.5">
             API Key
@@ -305,10 +312,11 @@ onMounted(loadModels)
               :placeholder="editingModel ? '••••••••' : 'Nhập API Key rồi bấm Fetch Models'"
               class="flex-1 bg-bg-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:border-mystic focus:outline-none transition-colors"
             />
+            <!-- Show Fetch button whenever an API key is typed (both create and edit) -->
             <button
-              v-if="!editingModel"
+              v-if="form.api_key.trim()"
               type="button"
-              :disabled="isFetching || !form.api_key.trim()"
+              :disabled="isFetching"
               class="px-4 py-2.5 text-sm font-medium rounded-xl border border-mystic text-mystic-glow hover:bg-mystic/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
               @click="doFetchModels"
             >
@@ -370,7 +378,11 @@ onMounted(loadModels)
               type="number"
               min="256"
               class="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-text-primary focus:border-mystic focus:outline-none transition-colors"
+              :class="form.max_tokens < 4096 ? 'border-amber-500/60' : 'border-border-subtle'"
             />
+            <p v-if="form.max_tokens < 4096" class="mt-1 text-xs text-amber-400">
+              ⚠ Nên đặt ≥ 4096 để tránh bị cắt giữa response
+            </p>
           </div>
           <div>
             <label class="block text-sm text-text-secondary mb-1.5">Temperature</label>
@@ -413,7 +425,7 @@ onMounted(loadModels)
     </AppModal>
 
     <!-- Delete modal -->
-    <AppModal :show="deleteModal" title="Xoá AI Model" size="sm" @close="deleteModal = false">
+    <AppModal :show="deleteModal" title="Xoá mô hình" size="sm" @close="deleteModal = false">
       <p class="text-text-secondary mb-5">
         Bạn có chắc muốn xoá model <strong class="text-gold">{{ deleteTarget?.name }}</strong>?
       </p>

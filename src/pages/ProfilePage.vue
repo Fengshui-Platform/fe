@@ -148,195 +148,214 @@ async function deleteAccount() {
 
 <template>
   <div class="flex flex-col flex-1">
-    <div class="max-w-2xl mx-auto w-full px-4 py-10 flex-1 space-y-6">
-      <h1 class="font-serif text-3xl text-text-primary">Tài khoản</h1>
+    <div class="max-w-2xl mx-auto w-full px-4 py-10 flex-1 space-y-5">
+
+      <!-- Page header -->
+      <div class="mb-2">
+        <h1 class="font-serif text-3xl gradient-text-gold mb-1">Tài khoản</h1>
+        <p class="text-text-muted text-sm">Quản lý thông tin và bảo mật tài khoản của bạn</p>
+      </div>
 
       <!-- ─── Avatar & Info Card ─── -->
-      <div class="bg-bg-card border border-border-subtle rounded-2xl p-6">
-        <div class="flex items-center gap-5 mb-6">
-          <!-- Avatar -->
-          <div class="relative">
-            <div class="w-20 h-20 rounded-full bg-mystic/20 border-2 border-mystic/40 overflow-hidden flex items-center justify-center">
-              <img
-                v-if="auth.user?.avatar_url"
-                :src="auth.user.avatar_url"
-                alt="avatar"
-                class="w-full h-full object-cover"
-              />
-              <span v-else class="text-3xl">{{ auth.user?.full_name?.charAt(0)?.toUpperCase() ?? '?' }}</span>
+      <div class="bg-bg-card border border-border-glow rounded-2xl overflow-hidden">
+        <div class="h-0.5 bg-gradient-to-r from-gold/60 via-mystic to-neon/60" />
+        <div class="p-6">
+          <div class="flex items-center gap-5 mb-5">
+            <!-- Avatar with mystic ring -->
+            <div class="relative flex-shrink-0">
+              <div class="w-20 h-20 rounded-full bg-mystic/20 border-2 border-mystic/50 overflow-hidden flex items-center justify-center ring-4 ring-mystic/10">
+                <img
+                  v-if="auth.user?.avatar_url"
+                  :src="auth.user.avatar_url"
+                  alt="avatar"
+                  class="w-full h-full object-cover"
+                />
+                <span v-else class="font-serif text-3xl text-gold">{{ auth.user?.full_name?.charAt(0)?.toUpperCase() ?? '?' }}</span>
+              </div>
+              <div v-if="uploadingAvatar || deletingAvatar" class="absolute inset-0 rounded-full bg-bg-base/70 flex items-center justify-center">
+                <AppSpinner size="sm" />
+              </div>
+              <!-- Online dot -->
+              <div class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-bg-card" />
             </div>
-            <div v-if="uploadingAvatar || deletingAvatar" class="absolute inset-0 rounded-full bg-bg-base/70 flex items-center justify-center">
-              <AppSpinner size="sm" />
+
+            <div class="flex-1 min-w-0">
+              <h2 class="font-semibold text-text-primary text-lg truncate">{{ auth.user?.full_name }}</h2>
+              <p class="text-text-muted text-sm truncate">{{ auth.user?.email }}</p>
+              <p class="text-text-muted text-xs mt-1">Tham gia {{ formatDate(auth.user?.created_at ?? '') }}</p>
             </div>
+
+            <AppBadge :variant="auth.user?.credits_status ?? 'empty'">
+              ✦ {{ auth.user?.credits_balance }} lượt
+            </AppBadge>
           </div>
 
-          <div class="flex-1">
-            <h2 class="font-semibold text-text-primary text-lg">{{ auth.user?.full_name }}</h2>
-            <p class="text-text-muted text-sm">{{ auth.user?.email }}</p>
-            <p class="text-text-muted text-xs mt-1">Tham gia {{ formatDate(auth.user?.created_at ?? '') }}</p>
+          <!-- Avatar actions -->
+          <div class="flex gap-2">
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              class="hidden"
+              @change="handleAvatarChange"
+            />
+            <AppButton size="sm" variant="secondary" :loading="uploadingAvatar" @click="fileInput?.click()">
+              Đổi ảnh
+            </AppButton>
+            <AppButton v-if="auth.user?.avatar_url" size="sm" variant="ghost" :loading="deletingAvatar" @click="removeAvatar">
+              Xóa ảnh
+            </AppButton>
           </div>
-
-          <AppBadge :variant="auth.user?.credits_status ?? 'empty'">
-            ⚡ {{ auth.user?.credits_balance }} lượt
-          </AppBadge>
         </div>
+      </div>
 
-        <!-- Avatar actions -->
-        <div class="flex gap-2">
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            class="hidden"
-            @change="handleAvatarChange"
-          />
-          <AppButton
-            size="sm"
-            variant="secondary"
-            :loading="uploadingAvatar"
-            @click="fileInput?.click()"
-          >
-            Đổi ảnh
-          </AppButton>
-          <AppButton
-            v-if="auth.user?.avatar_url"
-            size="sm"
-            variant="ghost"
-            :loading="deletingAvatar"
-            @click="removeAvatar"
-          >
-            Xóa ảnh
-          </AppButton>
+      <!-- ─── Credits Info ─── -->
+      <div class="bg-bg-card border border-border-subtle rounded-2xl overflow-hidden">
+        <div class="h-0.5 bg-gradient-to-r from-gold/40 via-gold to-gold/40" />
+        <div class="p-6">
+          <h2 class="text-xs font-semibold text-gold/60 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span>✦</span> Số dư lượt
+          </h2>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-serif text-4xl text-gold drop-shadow-[0_0_20px_rgba(245,200,66,0.4)] leading-none">
+                {{ auth.user?.credits_balance }}
+              </p>
+              <p class="text-text-muted text-sm mt-1">lượt còn lại</p>
+              <p v-if="auth.user?.credits_status === 'frozen'" class="text-amber-400 text-xs mt-1">
+                ⚠ Đang đóng băng — mua thêm để giải băng
+              </p>
+              <p v-else-if="auth.user?.credits_expires_at" class="text-text-muted text-xs mt-1">
+                Hết hạn: {{ formatDate(auth.user.credits_expires_at) }}
+              </p>
+            </div>
+            <RouterLink to="/buy-credits">
+              <AppButton size="sm">Mua thêm lượt</AppButton>
+            </RouterLink>
+          </div>
         </div>
       </div>
 
       <!-- ─── Edit Profile ─── -->
-      <div class="bg-bg-card border border-border-subtle rounded-2xl p-6">
-        <h2 class="font-semibold text-text-primary mb-5">Thông tin cá nhân</h2>
+      <div class="bg-bg-card border border-border-subtle rounded-2xl overflow-hidden">
+        <div class="h-0.5 bg-gradient-to-r from-transparent via-mystic/40 to-transparent" />
+        <div class="p-6">
+          <h2 class="text-xs font-semibold text-gold/60 uppercase tracking-widest mb-5 flex items-center gap-2">
+            <span>◆</span> Thông tin cá nhân
+          </h2>
 
-        <form @submit.prevent="saveProfile" class="space-y-4">
-          <div v-if="profileErrors.general" class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
-            {{ profileErrors.general }}
-          </div>
+          <form @submit.prevent="saveProfile" class="space-y-4">
+            <div v-if="profileErrors.general" class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
+              {{ profileErrors.general }}
+            </div>
 
-          <AppInput
-            v-model="profileForm.full_name"
-            label="Họ và tên"
-            placeholder="Nguyễn Văn An"
-            :error="profileErrors.full_name"
-            required
-          />
-
-          <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-text-secondary">Email</label>
-            <input
-              :value="auth.user?.email"
-              disabled
-              class="w-full bg-bg-surface border border-border-subtle rounded-lg px-4 py-2.5 text-text-muted cursor-not-allowed"
+            <AppInput
+              v-model="profileForm.full_name"
+              label="Họ và tên"
+              placeholder="Nguyễn Văn An"
+              :error="profileErrors.full_name"
+              required
             />
-            <p class="text-xs text-text-muted">Email không thể thay đổi</p>
-          </div>
 
-          <AppInput
-            v-model="profileForm.phone"
-            label="Số điện thoại (tùy chọn)"
-            type="tel"
-            placeholder="0901234567"
-          />
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-text-secondary">Email</label>
+              <input
+                :value="auth.user?.email"
+                disabled
+                class="w-full bg-bg-surface border border-border-subtle rounded-lg px-4 py-2.5 text-text-muted cursor-not-allowed"
+              />
+              <p class="text-xs text-text-muted">Email không thể thay đổi</p>
+            </div>
 
-          <AppButton type="submit" :loading="savingProfile">
-            Lưu thay đổi
-          </AppButton>
-        </form>
+            <AppInput
+              v-model="profileForm.phone"
+              label="Số điện thoại (tùy chọn)"
+              type="tel"
+              placeholder="0901234567"
+            />
+
+            <AppButton type="submit" :loading="savingProfile">
+              Lưu thay đổi
+            </AppButton>
+          </form>
+        </div>
       </div>
 
       <!-- ─── Change Password ─── -->
-      <div class="bg-bg-card border border-border-subtle rounded-2xl p-6">
-        <h2 class="font-semibold text-text-primary mb-5">Đổi mật khẩu</h2>
+      <div class="bg-bg-card border border-border-subtle rounded-2xl overflow-hidden">
+        <div class="h-0.5 bg-gradient-to-r from-transparent via-mystic/40 to-transparent" />
+        <div class="p-6">
+          <h2 class="text-xs font-semibold text-gold/60 uppercase tracking-widest mb-5 flex items-center gap-2">
+            <span>🔐</span> Đổi mật khẩu
+          </h2>
 
-        <form @submit.prevent="changePassword" class="space-y-4">
-          <div v-if="pwErrors.general" class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
-            {{ pwErrors.general }}
-          </div>
-
-          <!-- Current password -->
-          <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-text-secondary">Mật khẩu hiện tại <span class="text-gold">*</span></label>
-            <div class="relative">
-              <input
-                v-model="pwForm.current_password"
-                :type="showPw ? 'text' : 'password'"
-                placeholder="••••••••"
-                class="w-full bg-bg-elevated border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 transition-colors pr-10"
-                :class="pwErrors.current ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/30' : 'border-border-subtle focus:border-mystic focus:ring-mystic/30'"
-              />
-              <button type="button" @click="showPw = !showPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">
-                {{ showPw ? '🙈' : '👁' }}
-              </button>
+          <form @submit.prevent="changePassword" class="space-y-4">
+            <div v-if="pwErrors.general" class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
+              {{ pwErrors.general }}
             </div>
-            <p v-if="pwErrors.current" class="text-xs text-red-400">⚠ {{ pwErrors.current }}</p>
-          </div>
 
-          <!-- New password -->
-          <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-text-secondary">Mật khẩu mới <span class="text-gold">*</span></label>
-            <input
-              v-model="pwForm.new_password"
-              :type="showPw ? 'text' : 'password'"
-              placeholder="Tối thiểu 6 ký tự"
-              class="w-full bg-bg-elevated border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 transition-colors"
-              :class="pwErrors.new ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/30' : 'border-border-subtle focus:border-mystic focus:ring-mystic/30'"
-            />
-            <p v-if="pwErrors.new" class="text-xs text-red-400">⚠ {{ pwErrors.new }}</p>
-          </div>
+            <!-- Current password -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-text-secondary">Mật khẩu hiện tại <span class="text-gold">*</span></label>
+              <div class="relative">
+                <input
+                  v-model="pwForm.current_password"
+                  :type="showPw ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  class="w-full bg-bg-elevated border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 transition-colors pr-10"
+                  :class="pwErrors.current ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/30' : 'border-border-subtle focus:border-mystic focus:ring-mystic/30'"
+                />
+                <button type="button" @click="showPw = !showPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
+                  {{ showPw ? '🙈' : '👁' }}
+                </button>
+              </div>
+              <p v-if="pwErrors.current" class="text-xs text-red-400">⚠ {{ pwErrors.current }}</p>
+            </div>
 
-          <!-- Confirm password -->
-          <div class="space-y-1.5">
-            <label class="block text-sm font-medium text-text-secondary">Xác nhận mật khẩu mới <span class="text-gold">*</span></label>
-            <input
-              v-model="pwForm.confirm_password"
-              :type="showPw ? 'text' : 'password'"
-              placeholder="Nhập lại mật khẩu mới"
-              class="w-full bg-bg-elevated border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 transition-colors"
-              :class="pwErrors.confirm ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/30' : 'border-border-subtle focus:border-mystic focus:ring-mystic/30'"
-            />
-            <p v-if="pwErrors.confirm" class="text-xs text-red-400">⚠ {{ pwErrors.confirm }}</p>
-          </div>
+            <!-- New password -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-text-secondary">Mật khẩu mới <span class="text-gold">*</span></label>
+              <input
+                v-model="pwForm.new_password"
+                :type="showPw ? 'text' : 'password'"
+                placeholder="Tối thiểu 6 ký tự"
+                class="w-full bg-bg-elevated border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 transition-colors"
+                :class="pwErrors.new ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/30' : 'border-border-subtle focus:border-mystic focus:ring-mystic/30'"
+              />
+              <p v-if="pwErrors.new" class="text-xs text-red-400">⚠ {{ pwErrors.new }}</p>
+            </div>
 
-          <AppButton type="submit" :loading="savingPw">
-            Đổi mật khẩu
-          </AppButton>
-        </form>
-      </div>
+            <!-- Confirm password -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-text-secondary">Xác nhận mật khẩu mới <span class="text-gold">*</span></label>
+              <input
+                v-model="pwForm.confirm_password"
+                :type="showPw ? 'text' : 'password'"
+                placeholder="Nhập lại mật khẩu mới"
+                class="w-full bg-bg-elevated border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 transition-colors"
+                :class="pwErrors.confirm ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/30' : 'border-border-subtle focus:border-mystic focus:ring-mystic/30'"
+              />
+              <p v-if="pwErrors.confirm" class="text-xs text-red-400">⚠ {{ pwErrors.confirm }}</p>
+            </div>
 
-      <!-- ─── Credits Info ─── -->
-      <div class="bg-bg-card border border-border-subtle rounded-2xl p-6">
-        <h2 class="font-semibold text-text-primary mb-4">Số dư lượt</h2>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-3xl font-serif text-gold">{{ auth.user?.credits_balance }}</p>
-            <p class="text-text-muted text-sm mt-0.5">lượt còn lại</p>
-            <p v-if="auth.user?.credits_status === 'frozen'" class="text-amber-400 text-xs mt-1">
-              ⚠ Đang đóng băng — mua thêm để giải băng
-            </p>
-            <p v-else-if="auth.user?.credits_expires_at" class="text-text-muted text-xs mt-1">
-              Hết hạn: {{ formatDate(auth.user.credits_expires_at) }}
-            </p>
-          </div>
-          <RouterLink to="/buy-credits">
-            <AppButton size="sm">Mua thêm lượt</AppButton>
-          </RouterLink>
+            <AppButton type="submit" :loading="savingPw">
+              Đổi mật khẩu
+            </AppButton>
+          </form>
         </div>
       </div>
 
       <!-- ─── Danger Zone ─── -->
       <div class="bg-bg-card border border-red-500/20 rounded-2xl p-6">
-        <h2 class="font-semibold text-red-400 mb-2">Vùng nguy hiểm</h2>
+        <h2 class="text-xs font-semibold text-red-400/80 uppercase tracking-widest mb-2 flex items-center gap-2">
+          <span>⚠</span> Vùng nguy hiểm
+        </h2>
         <p class="text-text-muted text-sm mb-4">Xóa tài khoản là hành động không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa.</p>
         <AppButton variant="danger" size="sm" @click="showDeleteModal = true">
           Xóa tài khoản
         </AppButton>
       </div>
+
     </div>
 
     <!-- Delete Account Modal -->

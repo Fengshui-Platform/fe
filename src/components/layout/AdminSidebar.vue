@@ -14,7 +14,7 @@ const navItems = [
   { icon: '📖', label: 'Lịch sử xem',   name: 'AdminReadings' },
   { icon: '💳', label: 'Đơn mua lượt',  name: 'AdminOrders' },
   { icon: '📦', label: 'Gói lượt',       name: 'AdminPackages' },
-  { icon: '🤖', label: 'AI Models',      name: 'AdminAIModels' },
+  { icon: '⚙️', label: 'Mô hình',         name: 'AdminAIModels' },
   { icon: '⚙️', label: 'Cài đặt',       name: 'AdminSettings' },
 ]
 
@@ -34,10 +34,10 @@ async function logout() {
   <aside class="w-64 bg-bg-surface border-r border-border-subtle h-screen fixed top-0 left-0 flex flex-col z-40">
     <!-- Header -->
     <div class="px-5 py-6 border-b border-border-subtle">
-      <RouterLink :to="{ name: 'AdminDashboard' }" class="flex items-center gap-2">
+      <RouterLink :to="{ name: 'Home' }" class="flex items-center gap-2">
         <span class="font-serif text-xl text-gold">☯ Admin Panel</span>
       </RouterLink>
-      <p class="text-xs text-text-muted mt-1">Phong Thuỷ AI Platform</p>
+      <p class="text-xs text-text-muted mt-1">Phong Thuỷ Tâm Đức</p>
     </div>
 
     <!-- Nav -->

@@ -16,7 +16,7 @@ function processQueue(error: unknown) {
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-  timeout: 30000,
+  timeout: 180000, // 3 phút
 })
 
 api.interceptors.response.use(

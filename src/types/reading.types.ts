@@ -5,6 +5,11 @@ export interface ReadingInputDto {
   birth_date: string   // YYYY-MM-DD
   phone?: string
   gender?: string
+  // Love module
+  partner_name?: string
+  partner_birth_date?: string
+  // Fengshui home
+  house_direction?: string
 }
 
 export interface ReadingSection {

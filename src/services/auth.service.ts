@@ -2,9 +2,8 @@ import api from './api'
 import type { User, RegisterDto, LoginDto } from '@/types/user.types'
 
 export const authService = {
-  async register(dto: RegisterDto): Promise<User> {
-    const { data } = await api.post('/auth/register', dto)
-    return data.data
+  async register(dto: RegisterDto): Promise<void> {
+    await api.post('/auth/register', dto)
   },
 
   async login(dto: LoginDto): Promise<User> {

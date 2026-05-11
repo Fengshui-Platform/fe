@@ -23,6 +23,7 @@ const selectedPkg = ref<CreditPackage | null>(null)
 const showQR = ref(false)
 const qrData = ref<CreateOrderResponse | null>(null)
 const pollResult = ref<{ paid: boolean } | null>(null)
+const expiredQr = ref(false)
 const pollTimer = ref<ReturnType<typeof setInterval> | null>(null)
 const countdown = ref('')
 const countdownTimer = ref<ReturnType<typeof setInterval> | null>(null)
@@ -76,9 +77,13 @@ function startPolling(orderId: number) {
         pollResult.value = { paid: true }
         await auth.fetchMe()
         ui.toast.success(`🎉 Thanh toán thành công! Đã cộng ${qrData.value?.credits} lượt`)
+      } else if (res.status === 'expired' || res.status === 'failed') {
+        stopPolling()
+        stopCountdown()
+        expiredQr.value = true
       }
     } catch { /* ignore */ }
-  }, 10000) // poll mỗi 10 giây
+  }, 10000)
 }
 
 function stopPolling() {
@@ -103,6 +108,7 @@ function closeQR() {
   stopCountdown()
   qrData.value = null
   pollResult.value = null
+  expiredQr.value = false
   selectedPkg.value = null
 }
 </script>
@@ -110,16 +116,28 @@ function closeQR() {
 <template>
   <div class="flex flex-col flex-1">
     <div class="max-w-4xl mx-auto w-full px-4 py-10 flex-1">
+
       <!-- Header -->
-      <div class="text-center mb-10">
-        <h1 class="font-serif text-3xl md:text-4xl text-text-primary mb-3">Mua lượt xem phong thuỷ</h1>
-        <p class="text-text-secondary">Chọn gói phù hợp — lượt không hết, chỉ đóng băng sau 50 ngày</p>
+      <div class="text-center mb-12 relative">
+        <!-- Decorative glyphs -->
+        <div class="flex justify-center gap-6 text-text-muted/15 text-lg select-none mb-4">
+          <span class="animate-float">☽</span>
+          <span class="animate-shimmer-gold">✦</span>
+          <span class="animate-drift">☉</span>
+          <span class="animate-float">✦</span>
+          <span class="animate-shimmer-gold">☿</span>
+        </div>
+
+        <h1 class="font-serif text-3xl md:text-4xl gradient-text-gold mb-3">Mua lượt xem vận mệnh</h1>
+        <p class="text-text-secondary max-w-md mx-auto text-sm leading-relaxed">
+          Chọn gói phù hợp — lượt không hết, chỉ đóng băng sau 50 ngày nếu không dùng
+        </p>
 
         <!-- Current balance -->
-        <div v-if="auth.user" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-bg-card border border-border-subtle rounded-xl">
+        <div v-if="auth.user" class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-bg-card border border-border-glow rounded-xl shadow-glow-mystic">
           <span class="text-text-muted text-sm">Số dư hiện tại:</span>
           <AppBadge :variant="auth.user.credits_status">
-            ⚡ {{ auth.user.credits_balance }} lượt
+            ✦ {{ auth.user.credits_balance }} lượt
           </AppBadge>
           <span v-if="auth.user.credits_status === 'frozen'" class="text-xs text-amber-400">
             (đóng băng — mua thêm để giải băng)
@@ -133,33 +151,39 @@ function closeQR() {
       </div>
 
       <!-- Packages grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div
           v-for="(pkg, i) in packages"
           :key="pkg.id"
           :class="[
-            'relative bg-bg-card border rounded-2xl p-6 flex flex-col transition-all duration-300 cursor-pointer',
+            'relative rounded-2xl p-6 flex flex-col transition-all duration-300 cursor-pointer overflow-hidden',
             i === popularIndex
-              ? 'border-mystic shadow-glow-mystic scale-105'
-              : 'border-border-subtle hover:border-border-glow hover:shadow-card',
+              ? 'bg-bg-card border border-mystic shadow-glow-mystic scale-[1.03]'
+              : 'bg-bg-card border border-border-subtle hover:border-border-glow hover:shadow-card hover:-translate-y-1',
           ]"
           @click="selectPackage(pkg)"
         >
+          <!-- Popular gradient top bar -->
+          <div v-if="i === popularIndex" class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-gold/60 via-mystic to-neon/60" />
+
           <!-- Popular badge -->
-          <div v-if="i === popularIndex" class="absolute -top-3 left-1/2 -translate-x-1/2">
-            <span class="px-3 py-1 bg-gradient-to-r from-mystic to-neon text-white text-xs font-semibold rounded-full">
-              Phổ biến nhất
+          <div v-if="i === popularIndex" class="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+            <span class="px-3 py-1 bg-gradient-to-r from-mystic to-neon text-white text-xs font-semibold rounded-full shadow-glow-mystic">
+              ✦ Phổ biến nhất
             </span>
           </div>
 
-          <h3 class="font-semibold text-text-primary mb-1">{{ pkg.name }}</h3>
-          <div class="flex items-baseline gap-1 mb-1">
-            <span class="font-serif text-4xl text-gold">{{ pkg.credits }}</span>
-            <span class="text-text-muted text-sm">lượt</span>
+          <!-- Package content -->
+          <div class="mb-4">
+            <h3 class="font-semibold text-text-primary mb-1">{{ pkg.name }}</h3>
+            <div class="flex items-baseline gap-1 mb-1">
+              <span class="font-serif text-5xl" :class="i === popularIndex ? 'gradient-text-gold' : 'text-gold'">{{ pkg.credits }}</span>
+              <span class="text-text-muted text-sm">lượt</span>
+            </div>
+            <p class="text-xs text-text-muted">
+              ~{{ Math.round(pkg.price / pkg.credits).toLocaleString('vi-VN') }}đ/lượt · Hiệu lực {{ pkg.validity_days }} ngày
+            </p>
           </div>
-          <p class="text-xs text-text-muted mb-4">
-            ~{{ Math.round(pkg.price / pkg.credits).toLocaleString('vi-VN') }}đ/lượt · Hiệu lực {{ pkg.validity_days }} ngày
-          </p>
 
           <div class="mt-auto">
             <div class="text-2xl font-bold text-text-primary mb-3">{{ formatCurrency(pkg.price) }}</div>
@@ -168,86 +192,117 @@ function closeQR() {
               :loading="ordering && selectedPkg?.id === pkg.id"
               :variant="i === popularIndex ? 'primary' : 'secondary'"
             >
-              Chọn gói
+              Chọn gói này
             </AppButton>
           </div>
         </div>
       </div>
 
-      <!-- Note -->
-      <div class="mt-8 p-4 bg-bg-surface rounded-xl border border-border-subtle text-sm text-text-muted space-y-1">
-        <p>✅ Lượt không hết — chỉ đóng băng sau 50 ngày nếu không dùng</p>
-        <p>✅ Mua thêm bất kỳ gói → tự động giải băng + cộng dồn + gia hạn 50 ngày</p>
-        <p>✅ Xem lại kết quả cũ trong lịch sử không tốn lượt</p>
+      <!-- Note box with gold left border -->
+      <div class="mt-10 border-l-4 border-gold/60 bg-gold/4 rounded-r-xl pl-5 pr-5 py-4 space-y-2">
+        <p class="text-xs font-semibold text-gold/70 uppercase tracking-widest mb-3">Lưu ý quan trọng</p>
+        <p class="text-sm text-text-secondary flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Lượt không hết — chỉ đóng băng sau 50 ngày nếu không dùng</p>
+        <p class="text-sm text-text-secondary flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Mua thêm bất kỳ gói → tự động giải băng + cộng dồn + gia hạn 50 ngày</p>
+        <p class="text-sm text-text-secondary flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Xem lại kết quả cũ trong lịch sử không tốn lượt</p>
+        <p class="text-sm text-text-secondary flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Thanh toán QR tự động xác nhận trong 1–2 phút sau khi chuyển khoản</p>
       </div>
     </div>
 
     <!-- QR Payment Modal -->
-    <AppModal :show="showQR" title="Thanh toán QR" @close="closeQR" size="md">
+    <AppModal :show="showQR" title="Thanh toán QR" @close="closeQR" size="lg">
       <!-- Success state -->
-      <div v-if="pollResult?.paid" class="text-center py-6">
+      <div v-if="pollResult?.paid" class="text-center py-8">
         <div class="text-6xl mb-4">🎉</div>
         <h3 class="text-xl font-semibold text-emerald-400 mb-2">Thanh toán thành công!</h3>
-        <p class="text-text-secondary text-sm mb-5">Đã cộng {{ qrData?.credits }} lượt vào tài khoản của bạn.</p>
+        <p class="text-text-secondary text-sm mb-6">
+          Đã cộng <span class="text-gold font-bold font-serif text-xl">{{ qrData?.credits }}</span> lượt vào tài khoản của bạn.
+        </p>
         <AppButton @click="closeQR">Đóng</AppButton>
       </div>
 
-      <!-- QR state -->
-      <div v-else-if="qrData" class="space-y-4">
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-text-muted">Gói:</span>
-          <span class="text-text-primary font-medium">{{ selectedPkg?.name }} — {{ qrData.credits }} lượt</span>
-        </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-text-muted">Số tiền:</span>
-          <span class="text-gold font-bold text-lg">{{ formatCurrency(qrData.amount) }}</span>
-        </div>
+      <!-- Expired / failed state -->
+      <div v-else-if="expiredQr" class="text-center py-8">
+        <div class="text-5xl mb-4">⏳</div>
+        <h3 class="text-lg font-semibold text-amber-400 mb-2">QR đã hết hạn</h3>
+        <p class="text-text-secondary text-sm mb-6">Vui lòng đóng và chọn lại gói để tạo đơn mới.</p>
+        <AppButton variant="secondary" @click="closeQR">Đóng</AppButton>
+      </div>
 
-        <!-- QR Image -->
-        <div class="flex justify-center">
-          <img
-            v-if="qrData.qr_data_url"
-            :src="qrData.qr_data_url"
-            alt="QR thanh toán"
-            class="w-56 h-56 rounded-xl border border-border-subtle"
-          />
-          <img
-            v-else-if="qrData.qr_url"
-            :src="qrData.qr_url"
-            alt="QR thanh toán"
-            class="w-56 h-56 rounded-xl border border-border-subtle"
-          />
-        </div>
-
-        <!-- Bank info -->
-        <div class="bg-bg-surface rounded-xl p-4 space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-text-muted">Ngân hàng:</span>
-            <span class="text-text-primary">{{ qrData.bank_name }}</span>
+      <!-- QR state: 2-column layout -->
+      <div v-else-if="qrData" class="flex flex-col sm:flex-row gap-5">
+        <!-- Left: QR image -->
+        <div class="flex-shrink-0 w-full sm:w-52">
+          <div class="relative">
+            <img
+              v-if="qrData.qr_data_url"
+              :src="qrData.qr_data_url"
+              alt="QR thanh toán"
+              class="w-full rounded-xl border border-border-subtle"
+            />
+            <img
+              v-else-if="qrData.qr_url"
+              :src="qrData.qr_url"
+              alt="QR thanh toán"
+              class="w-full rounded-xl border border-border-subtle"
+            />
           </div>
-          <div class="flex justify-between">
-            <span class="text-text-muted">Số tài khoản:</span>
-            <span class="text-text-primary font-mono">{{ qrData.bank_number }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-text-muted">Nội dung CK:</span>
-            <span class="text-gold font-mono font-semibold">{{ qrData.topup_code }}</span>
+          <!-- Countdown under QR -->
+          <div class="text-center mt-3">
+            <p class="text-xs text-text-muted">QR hết hạn sau</p>
+            <p class="text-base font-mono font-bold text-amber-400">{{ countdown }}</p>
           </div>
         </div>
 
-        <div class="text-center">
-          <p class="text-xs text-text-muted mb-1">QR hết hạn sau</p>
-          <p class="text-lg font-mono font-bold text-amber-400">{{ countdown }}</p>
-        </div>
+        <!-- Right: info + status -->
+        <div class="flex-1 flex flex-col gap-3">
+          <!-- Order summary -->
+          <div class="bg-bg-surface rounded-xl p-3 space-y-1.5 text-sm">
+            <div class="flex justify-between">
+              <span class="text-text-muted">Gói:</span>
+              <span class="text-text-primary font-medium">{{ selectedPkg?.name }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-text-muted">Số lượt:</span>
+              <span class="text-text-primary">{{ qrData.credits }} lượt</span>
+            </div>
+            <div class="flex justify-between border-t border-border-subtle pt-1.5 mt-1">
+              <span class="text-text-muted">Số tiền:</span>
+              <span class="text-gold font-bold text-base">{{ formatCurrency(qrData.amount) }}</span>
+            </div>
+          </div>
 
-        <div class="flex items-center gap-2 text-xs text-text-muted justify-center">
-          <AppSpinner size="sm" />
-          Đang chờ xác nhận thanh toán...
-        </div>
+          <!-- Bank info -->
+          <div class="bg-bg-surface rounded-xl p-3 space-y-1.5 text-sm">
+            <div class="flex justify-between">
+              <span class="text-text-muted">Ngân hàng:</span>
+              <span class="text-text-primary font-medium">{{ qrData.bank_name }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-text-muted">Số TK:</span>
+              <span class="text-text-primary font-mono">{{ qrData.bank_number }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-text-muted">Chủ TK:</span>
+              <span class="text-text-primary">{{ qrData.bank_account_holder }}</span>
+            </div>
+          </div>
 
-        <p class="text-xs text-text-muted text-center">
-          ⚠ Ghi đúng nội dung chuyển khoản để hệ thống xác nhận tự động
-        </p>
+          <!-- Transfer content — gold highlight box -->
+          <div class="border-l-4 border-gold/70 bg-gold/6 rounded-r-xl pl-4 pr-3 py-3">
+            <p class="text-xs text-text-muted mb-1.5 uppercase tracking-wider">Nội dung chuyển khoản</p>
+            <p class="text-gold font-mono font-bold text-sm tracking-wide">{{ qrData.topup_code }}</p>
+          </div>
+
+          <!-- Status -->
+          <div class="flex items-center gap-2 text-xs text-text-muted">
+            <AppSpinner size="sm" />
+            Đang chờ xác nhận — kiểm tra mỗi 10 giây
+          </div>
+
+          <p class="text-xs text-amber-400/80">
+            ⚠ Ghi đúng nội dung CK để hệ thống xác nhận tự động. Lượt được cộng trong 1–2 phút.
+          </p>
+        </div>
       </div>
     </AppModal>
 

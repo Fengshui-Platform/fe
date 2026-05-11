@@ -12,6 +12,12 @@ export interface AdminStats {
   pending_orders: number
 }
 
+export interface DailyStatRow { date: string; count: number; revenue: number }
+export interface DailyStats { readings: DailyStatRow[]; revenue: DailyStatRow[] }
+export interface ModuleRow { module: string; count: number }
+export interface UserDailyRow { date: string; count: number }
+export interface MonthlyRow { month: string; revenue: number; orders: number; readings: number; new_users: number }
+
 export interface AdminUser {
   id: number
   full_name: string
@@ -28,14 +34,16 @@ export interface AdminUser {
 export interface AdminReading {
   id: number
   user_id: number | null
+  session_id: string | null
+  ip_address: string | null
   module: string
   is_free: number
   credits_used: number
   created_at: string
   input_data: string
   result_data: string
-  full_name?: string
-  email?: string
+  full_name: string | null
+  email: string | null
 }
 
 export interface AdminOrder {
@@ -78,7 +86,27 @@ export interface AIModel {
 
 export const adminService = {
   async getDashboard(): Promise<AdminStats> {
-    const { data } = await api.get('/admin/dashboard')
+    const { data } = await api.get('/admin/stats/overview')
+    return data.data
+  },
+
+  async getDailyStats(days = 30): Promise<DailyStats> {
+    const { data } = await api.get('/admin/stats/daily', { params: { days } })
+    return data.data
+  },
+
+  async getModuleStats(): Promise<ModuleRow[]> {
+    const { data } = await api.get('/admin/stats/modules')
+    return data.data
+  },
+
+  async getUsersDaily(days = 30): Promise<UserDailyRow[]> {
+    const { data } = await api.get('/admin/stats/users', { params: { days } })
+    return data.data
+  },
+
+  async getMonthlyStats(months = 12): Promise<MonthlyRow[]> {
+    const { data } = await api.get('/admin/stats/monthly', { params: { months } })
     return data.data
   },
 
