@@ -4,99 +4,27 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useReadingStore } from '@/stores/reading'
 import { useAuthStore } from '@/stores/auth'
 import AppButton from '@/components/common/AppButton.vue'
+import ThemeBackground from '@/components/reading/ThemeBackground.vue'
 import { MODULE_LABELS, MODULE_ICONS, type ReadingModule } from '@/types/reading.types'
+import { usePageTheme } from '@/composables/usePageTheme'
+import { TIME_FILTERS } from '@/config/themeConfig'
 
 const router = useRouter()
 const readingStore = useReadingStore()
 const auth = useAuthStore()
-
-// ── 12 Chinese zodiac themes ───────────────────────────────
-interface ZodiacTheme {
-  name: string; symbol: string; element: string
-  accent: string
-  heroBg: string   // dramatic gradient for hero section
-  pageBg: string   // subtle ambient for full-page backgroundImage
-}
-
-const Z = (r: number, g: number, b: number, a: number) => `rgba(${r},${g},${b},${a})`
-const nebula = (c1: string, c2: string, c3: string) => [
-  `radial-gradient(ellipse 95% 75% at 50% -8%, ${c1} 0%, transparent 58%)`,
-  `radial-gradient(ellipse 65% 55% at 6% 92%, ${c2} 0%, transparent 62%)`,
-  `radial-gradient(ellipse 50% 40% at 94% 65%, ${c3} 0%, transparent 58%)`,
-].join(',')
-const page2 = (c1: string, c2: string) => [
-  `radial-gradient(ellipse 70% 50% at 10% 20%, ${c1} 0%, transparent 70%)`,
-  `radial-gradient(ellipse 55% 42% at 90% 78%, ${c2} 0%, transparent 70%)`,
-].join(',')
-
-const ZODIAC_THEMES: ZodiacTheme[] = [
-  {
-    name: 'Tý', symbol: '🐭', element: 'Thủy · Bắc', accent: '#06b6d4',
-    heroBg: nebula(Z(6,182,212,.52), Z(14,116,144,.35), Z(6,182,212,.20)),
-    pageBg: page2(Z(6,182,212,.16), Z(14,116,144,.10)),
-  },
-  {
-    name: 'Sửu', symbol: '🐂', element: 'Thổ · Đông Bắc', accent: '#d97706',
-    heroBg: nebula(Z(217,119,6,.50), Z(120,53,15,.33), Z(245,158,11,.20)),
-    pageBg: page2(Z(217,119,6,.16), Z(120,53,15,.10)),
-  },
-  {
-    name: 'Dần', symbol: '🐯', element: 'Mộc · Đông', accent: '#10b981',
-    heroBg: nebula(Z(5,150,105,.54), Z(4,120,87,.34), Z(245,200,66,.22)),
-    pageBg: page2(Z(5,150,105,.16), Z(245,200,66,.09)),
-  },
-  {
-    name: 'Mão', symbol: '🐇', element: 'Mộc · Đông', accent: '#14b8a6',
-    heroBg: nebula(Z(20,184,166,.52), Z(4,120,87,.32), Z(20,184,166,.20)),
-    pageBg: page2(Z(20,184,166,.16), Z(4,120,87,.10)),
-  },
-  {
-    name: 'Thìn', symbol: '🐲', element: 'Thổ · Đông Nam', accent: '#f5c842',
-    heroBg: nebula(Z(245,200,66,.60), Z(124,58,237,.42), Z(6,182,212,.24)),
-    pageBg: page2(Z(245,200,66,.18), Z(124,58,237,.13)),
-  },
-  {
-    name: 'Tỵ', symbol: '🐍', element: 'Hỏa · Nam', accent: '#f43f5e',
-    heroBg: nebula(Z(225,29,72,.52), Z(190,18,60,.34), Z(244,63,94,.20)),
-    pageBg: page2(Z(225,29,72,.16), Z(190,18,60,.10)),
-  },
-  {
-    name: 'Ngọ', symbol: '🐴', element: 'Hỏa · Nam', accent: '#f97316',
-    heroBg: nebula(Z(234,88,12,.54), Z(220,38,38,.34), Z(251,146,60,.22)),
-    pageBg: page2(Z(234,88,12,.16), Z(220,38,38,.10)),
-  },
-  {
-    name: 'Mùi', symbol: '🐑', element: 'Thổ · Tây Nam', accent: '#a78bfa',
-    heroBg: nebula(Z(139,92,246,.54), Z(109,40,217,.34), Z(168,85,247,.22)),
-    pageBg: page2(Z(139,92,246,.16), Z(109,40,217,.10)),
-  },
-  {
-    name: 'Thân', symbol: '🐒', element: 'Kim · Tây', accent: '#94a3b8',
-    heroBg: nebula(Z(100,116,139,.52), Z(71,85,105,.34), Z(6,182,212,.25)),
-    pageBg: page2(Z(100,116,139,.18), Z(6,182,212,.10)),
-  },
-  {
-    name: 'Dậu', symbol: '🐓', element: 'Kim · Tây', accent: '#f5c842',
-    heroBg: nebula(Z(245,200,66,.55), Z(180,130,30,.35), Z(217,119,6,.22)),
-    pageBg: page2(Z(245,200,66,.18), Z(180,130,30,.11)),
-  },
-  {
-    name: 'Tuất', symbol: '🐕', element: 'Thổ · Tây Bắc', accent: '#fb923c',
-    heroBg: nebula(Z(180,83,9,.52), Z(146,64,14,.34), Z(217,119,6,.22)),
-    pageBg: page2(Z(180,83,9,.16), Z(217,119,6,.11)),
-  },
-  {
-    name: 'Hợi', symbol: '🐖', element: 'Thủy · Bắc', accent: '#818cf8',
-    heroBg: nebula(Z(79,70,229,.54), Z(55,48,163,.35), Z(99,102,241,.24)),
-    pageBg: page2(Z(79,70,229,.17), Z(55,48,163,.10)),
-  },
-]
 
 const rawResult = computed(() => readingStore.currentResult)
 const input     = computed(() => readingStore.currentInput)
 const module    = computed(() => readingStore.currentModule)
 
 if (!rawResult.value) router.replace({ name: 'Home' })
+
+// ── Theme system ───────────────────────────────────────────
+const { theme, zodiacInfo } = usePageTheme(
+  () => input.value?.birth_date,
+  () => module.value,
+  () => result.value,
+)
 
 // ── Client-side recovery for malformed stored data ─────────
 // When parseJsonResponse failed at write time, the full AI response
@@ -172,14 +100,29 @@ const summaryLabel: Partial<Record<ReadingModule, string>> = {
 
 const summaryText = computed(() => result.value?.summary ?? '')
 
-// ── Chinese zodiac from birth year ────────────────────────
-const zodiacInfo = computed<ZodiacTheme | null>(() => {
-  const birthDate = input.value?.birth_date
-  if (!birthDate) return null
-  const year = parseInt(birthDate.split('-')[0], 10)
-  if (isNaN(year)) return null
-  const idx = ((year - 1900) % 12 + 12) % 12
-  return ZODIAC_THEMES[idx]
+// zodiacInfo comes from usePageTheme above
+const ZODIAC_DISPLAY: Record<string, { symbol: string; element: string }> = {
+  rat:     { symbol: '🐭', element: 'Thuỷ · Bắc' },
+  ox:      { symbol: '🐂', element: 'Thổ · Đông Bắc' },
+  tiger:   { symbol: '🐯', element: 'Mộc · Đông' },
+  rabbit:  { symbol: '🐇', element: 'Mộc · Đông' },
+  dragon:  { symbol: '🐲', element: 'Thổ · Đông Nam' },
+  snake:   { symbol: '🐍', element: 'Hoả · Nam' },
+  horse:   { symbol: '🐴', element: 'Hoả · Nam' },
+  goat:    { symbol: '🐑', element: 'Thổ · Tây Nam' },
+  monkey:  { symbol: '🐒', element: 'Kim · Tây' },
+  rooster: { symbol: '🐓', element: 'Kim · Tây' },
+  dog:     { symbol: '🐕', element: 'Thổ · Tây Bắc' },
+  pig:     { symbol: '🐖', element: 'Thuỷ · Bắc' },
+}
+
+const zodiacDisplay = computed(() => {
+  if (!zodiacInfo.value) return null
+  return {
+    ...zodiacInfo.value,
+    ...ZODIAC_DISPLAY[zodiacInfo.value.key],
+    accent: theme.value.accentColor,
+  }
 })
 
 
@@ -230,29 +173,34 @@ function asString(v: unknown): string {
 </script>
 
 <template>
-  <div
-    v-if="result"
-    class="flex flex-col flex-1"
-    :style="zodiacInfo ? { backgroundImage: zodiacInfo.pageBg } : {}"
-  >
+  <ThemeBackground v-if="result" :theme="theme" class="flex flex-col flex-1">
 
     <!-- ── Hero banner ─────────────────────────────────────── -->
     <div class="relative overflow-hidden">
-      <!-- Zodiac nebula: unique astronomical gradient per con giáp -->
+      <!-- Module + zodiac hero gradient -->
       <div
         class="absolute inset-0 pointer-events-none transition-[background] duration-1000"
-        :style="{ background: zodiacInfo ? zodiacInfo.heroBg : 'radial-gradient(ellipse 90% 70% at 50% -10%, rgba(124,58,237,0.40) 0%, transparent 60%)' }"
+        :style="{ background: theme.heroGradient, filter: TIME_FILTERS[theme.timeOfDay] }"
       />
-      <!-- Fade into page -->
-      <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg-base to-transparent pointer-events-none" />
+      <!-- Fade to page bg -->
+      <div class="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-bg-base to-transparent pointer-events-none" />
 
-      <!-- Orbital ring decorations -->
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full border border-mystic/8 animate-spin-slow pointer-events-none" />
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-gold/4 animate-spin-slow-reverse pointer-events-none" />
+      <!-- Orbital rings tinted to theme -->
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full border animate-spin-slow pointer-events-none"
+        :style="{ borderColor: theme.primaryColor + '18' }"
+      />
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[640px] rounded-full border animate-spin-slow-reverse pointer-events-none"
+        :style="{ borderColor: theme.accentColor + '10' }"
+      />
 
       <div class="relative max-w-5xl mx-auto px-4 pt-10 pb-14 text-center">
         <!-- Module pill -->
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-mystic/20 border border-mystic/30 rounded-full text-sm text-mystic-glow mb-6">
+        <div
+          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm mb-6"
+          :style="{ background: theme.primaryColor + '25', borderColor: theme.primaryColor + '50', color: theme.textAccent }"
+        >
           {{ MODULE_ICONS[module] }} {{ MODULE_LABELS[module] }}
         </div>
 
@@ -262,20 +210,26 @@ function asString(v: unknown): string {
         </h1>
         <p class="text-text-muted text-sm tracking-widest">{{ input?.birth_date }}</p>
 
-        <!-- Zodiac cung mệnh badge -->
-        <div v-if="zodiacInfo" class="flex items-center justify-center mt-3">
+        <!-- Zodiac + Ngũ hành badge -->
+        <div v-if="zodiacDisplay" class="flex items-center justify-center gap-2 mt-3 flex-wrap">
           <div
             class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-[11px] tracking-[0.22em] uppercase font-serif"
             :style="{
-              borderColor: zodiacInfo.accent + '45',
-              background: zodiacInfo.accent + '12',
-              color: zodiacInfo.accent,
+              borderColor: zodiacDisplay.accent + '45',
+              background: zodiacDisplay.accent + '12',
+              color: zodiacDisplay.accent,
             }"
           >
-            <span class="text-base leading-none">{{ zodiacInfo.symbol }}</span>
-            <span>Tuổi {{ zodiacInfo.name }}</span>
+            <span class="text-base leading-none">{{ zodiacDisplay.symbol }}</span>
+            <span>Tuổi {{ zodiacDisplay.name }}</span>
             <span class="opacity-40">·</span>
-            <span>{{ zodiacInfo.element }}</span>
+            <span>{{ zodiacDisplay.element }}</span>
+          </div>
+          <div
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] tracking-widest uppercase"
+            :style="{ borderColor: theme.glowColor, background: theme.primaryColor + '15', color: theme.textAccent }"
+          >
+            Mệnh {{ zodiacDisplay.nguHanh }}
           </div>
         </div>
 
@@ -310,17 +264,27 @@ function asString(v: unknown): string {
           <div
             v-for="n in coreNumbers"
             :key="n.label"
-            class="bg-bg-card/80 backdrop-blur-sm border border-border-subtle hover:border-gold/50 rounded-2xl px-6 py-5 text-center transition-all duration-300 hover:shadow-glow-gold min-w-[110px] group"
+            class="backdrop-blur-sm border rounded-2xl px-6 py-5 text-center transition-all duration-300 min-w-[110px] group cursor-default"
+            :style="{
+              background: theme.glassBackground,
+              borderColor: theme.primaryColor + '40',
+              boxShadow: `0 0 0 0 ${theme.glowColor}`,
+            }"
           >
-            <div class="font-serif text-6xl text-gold drop-shadow-[0_0_28px_rgba(245,200,66,0.5)] leading-none mb-2 group-hover:drop-shadow-[0_0_40px_rgba(245,200,66,0.7)] transition-all">
-              {{ n.value }}
-            </div>
+            <div
+              class="font-serif text-6xl leading-none mb-2 transition-all duration-300"
+              :style="{ color: theme.textAccent, textShadow: `0 0 30px ${theme.glowColor}` }"
+            >{{ n.value }}</div>
             <div class="text-xs text-text-muted font-medium uppercase tracking-wider">{{ n.label }}</div>
           </div>
         </div>
 
         <!-- Score gauge -->
-        <div v-if="score" class="mt-8 max-w-sm mx-auto bg-bg-card/80 backdrop-blur-sm border border-border-subtle rounded-2xl p-6">
+        <div
+          v-if="score"
+          class="mt-8 max-w-sm mx-auto backdrop-blur-sm border rounded-2xl p-6"
+          :style="{ background: theme.glassBackground, borderColor: theme.primaryColor + '40' }"
+        >
           <div class="flex items-center justify-between mb-4">
             <p class="text-sm font-medium text-text-secondary">{{ score.label }}</p>
             <p class="font-serif text-4xl font-bold leading-none" :class="scoreColor(score.value).text">
@@ -344,50 +308,46 @@ function asString(v: unknown): string {
     <!-- ── Content ──────────────────────────────────────────── -->
     <div class="max-w-4xl mx-auto w-full px-4 pb-16 space-y-4">
 
-      <!-- Zodiac destiny card (numerology) -->
+      <!-- Zodiac destiny card -->
       <div
-        v-if="zodiacInfo && module === 'numerology'"
-        class="relative overflow-hidden backdrop-blur-md bg-bg-card/80 rounded-2xl p-5 border"
-        :style="{ borderColor: zodiacInfo.accent + '30' }"
+        v-if="zodiacDisplay && module === 'numerology'"
+        class="relative overflow-hidden backdrop-blur-md rounded-2xl p-5 border"
+        :style="{ background: theme.glassBackground, borderColor: theme.primaryColor + '35' }"
       >
-        <!-- Accent top bar -->
-        <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" :style="{ background: `linear-gradient(90deg, transparent, ${zodiacInfo.accent}99, transparent)` }" />
-        <!-- Bg glow blob -->
-        <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full blur-3xl pointer-events-none" :style="{ background: zodiacInfo.accent + '22' }" />
+        <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" :style="{ background: `linear-gradient(90deg, transparent, ${theme.accentColor}aa, transparent)` }" />
+        <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full blur-3xl pointer-events-none" :style="{ background: theme.primaryColor + '25' }" />
 
         <div class="flex items-center gap-5">
-          <!-- Zodiac symbol seal -->
           <div class="shrink-0 relative">
             <div
               class="w-16 h-16 rounded-full border-2 flex items-center justify-center text-3xl"
-              :style="{ borderColor: zodiacInfo.accent + '55', boxShadow: `0 0 20px ${zodiacInfo.accent}25, inset 0 0 20px ${zodiacInfo.accent}08` }"
-            >{{ zodiacInfo.symbol }}</div>
-            <div class="absolute inset-0 rounded-full border border-dashed opacity-20" :style="{ borderColor: zodiacInfo.accent, margin: '-5px' }" />
+              :style="{ borderColor: zodiacDisplay.accent + '55', boxShadow: `0 0 20px ${theme.glowColor}, inset 0 0 20px ${theme.primaryColor}15` }"
+            >{{ zodiacDisplay.symbol }}</div>
+            <div class="absolute inset-0 rounded-full border border-dashed opacity-20" :style="{ borderColor: zodiacDisplay.accent, margin: '-5px' }" />
           </div>
-
-          <!-- Info -->
           <div class="flex-1 min-w-0">
-            <p class="text-[10px] tracking-[0.3em] uppercase mb-1" :style="{ color: zodiacInfo.accent + 'aa' }">Thiên Can Địa Chi</p>
+            <p class="text-[10px] tracking-[0.3em] uppercase mb-1" :style="{ color: theme.textAccent + 'aa' }">Thiên Can Địa Chi</p>
             <p class="font-serif text-xl font-semibold text-text-primary">
-              Tuổi {{ zodiacInfo.name }}
-              <span class="text-sm font-sans font-normal text-text-muted ml-1">· {{ zodiacInfo.element }}</span>
+              Tuổi {{ zodiacDisplay.name }}
+              <span class="text-sm font-sans font-normal text-text-muted ml-1">· {{ zodiacDisplay.element }} · Mệnh {{ zodiacDisplay.nguHanh }}</span>
             </p>
             <p class="text-text-muted text-xs mt-1">Mệnh số huyền cơ theo thập nhị địa chi</p>
           </div>
-
-          <!-- Decorative trigrams -->
           <div class="shrink-0 text-right select-none hidden sm:block">
-            <p class="font-serif text-2xl opacity-20" :style="{ color: zodiacInfo.accent }">☯</p>
-            <p class="text-[10px] tracking-wider mt-1 opacity-30" :style="{ color: zodiacInfo.accent }">天干</p>
+            <p class="font-serif text-2xl opacity-20" :style="{ color: theme.accentColor }">☯</p>
+            <p class="text-[10px] tracking-wider mt-1 opacity-30" :style="{ color: theme.accentColor }">天干</p>
           </div>
         </div>
       </div>
 
       <!-- Summary -->
-      <div class="relative overflow-hidden backdrop-blur-md bg-bg-card/80 border border-border-glow rounded-2xl p-6 shadow-glow-mystic">
-        <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-mystic via-neon to-transparent rounded-l-2xl" />
+      <div
+        class="relative overflow-hidden backdrop-blur-md border rounded-2xl p-6"
+        :style="{ background: theme.glassBackground, borderColor: theme.primaryColor + '40', boxShadow: `0 0 30px ${theme.glowColor}` }"
+      >
+        <div class="absolute top-0 left-0 w-1 h-full rounded-l-2xl" :style="{ background: `linear-gradient(to bottom, ${theme.accentColor}, ${theme.primaryColor}, transparent)` }" />
         <h2 class="font-semibold text-text-primary mb-3 flex items-center gap-2 pl-3">
-          <span class="text-gold text-lg animate-shimmer-gold">✦</span>
+          <span class="text-lg" :style="{ color: theme.textAccent }">✦</span>
           {{ summaryLabel[module] ?? 'Tổng quan' }}
         </h2>
         <p class="text-text-secondary leading-relaxed pl-3 text-[15px]">{{ summaryText }}</p>
@@ -399,9 +359,10 @@ function asString(v: unknown): string {
         <!-- Visible section -->
         <div
           v-if="section.visible && section.content"
-          class="relative bg-bg-card border border-border-subtle hover:border-border-glow rounded-2xl p-6 transition-all duration-300 group overflow-hidden"
+          class="relative border rounded-2xl p-6 transition-all duration-300 group overflow-hidden backdrop-blur-sm"
+          :style="{ background: theme.glassBackground, borderColor: theme.primaryColor + '30' }"
         >
-          <div class="absolute top-0 left-0 w-0.5 h-full bg-gradient-to-b from-gold/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-l-2xl" />
+          <div class="absolute top-0 left-0 w-0.5 h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-l-2xl" :style="{ background: `linear-gradient(to bottom, ${theme.accentColor}99, transparent)` }" />
 
           <h3 v-if="section.content.title" class="text-lg text-gold mb-4 font-semibold flex items-center gap-2">
             <span class="text-gold/50 text-sm">◆</span>
@@ -615,5 +576,5 @@ function asString(v: unknown): string {
       </div>
 
     </div>
-  </div>
+  </ThemeBackground>
 </template>
