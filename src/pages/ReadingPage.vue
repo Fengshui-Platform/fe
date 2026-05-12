@@ -11,7 +11,6 @@ import type { AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
-import AppSpinner from '@/components/common/AppSpinner.vue'
 import { useReadingForm } from '@/composables/useReadingForm'
 
 const route = useRoute()
@@ -264,7 +263,7 @@ if (!VALID_MODULES.includes(module.value)) {
               <!-- Submit -->
               <AppButton type="submit" size="lg" class="w-full mt-2" :loading="isLoading">
                 <template v-if="isLoading">
-                  <AppSpinner size="sm" /> Đang phân tích...
+                  Đang phân tích...
                 </template>
                 <template v-else>
                   ✨ Phân tích {{ moduleLabel }}
