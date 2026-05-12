@@ -2,7 +2,7 @@ import api from './api'
 import type { User } from '@/types/user.types'
 
 export const userService = {
-  async updateProfile(dto: { full_name: string; phone?: string }): Promise<User> {
+  async updateProfile(dto: { full_name: string; phone?: string; birth_date?: string | null; gender?: string | null }): Promise<User> {
     const { data } = await api.put('/users/profile', dto)
     return data.data
   },

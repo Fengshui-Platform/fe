@@ -5,6 +5,7 @@ export interface ReadingInputDto {
   birth_date: string   // YYYY-MM-DD
   phone?: string
   gender?: string
+  for_other?: boolean  // true = don't save to user profile
   // Love module
   partner_name?: string
   partner_birth_date?: string

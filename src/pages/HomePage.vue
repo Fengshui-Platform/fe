@@ -9,7 +9,8 @@ import { type AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
-import AppSpinner from '@/components/common/AppSpinner.vue'
+
+import { useReadingForm } from '@/composables/useReadingForm'
 
 const router = useRouter()
 const readingStore = useReadingStore()
@@ -22,6 +23,8 @@ const form = reactive({
   phone: '',
   gender: '',
 })
+
+const { isForOther, viewForOther, viewForSelf } = useReadingForm(() => auth.user, form)
 
 const errors = reactive({ full_name: '', birth_date: '' })
 const isLoading = ref(false)
@@ -41,6 +44,7 @@ async function submit() {
       birth_date: form.birth_date,
       phone: form.phone || undefined,
       gender: form.gender || undefined,
+      for_other: isForOther.value || undefined,
     }
 
     if (auth.hasActiveCredits) {
@@ -202,6 +206,22 @@ function goToModule(mod: typeof modules[0]) {
               <p class="text-xs text-text-muted tracking-wider uppercase">Thần số học · Vận mệnh · Đường đời</p>
             </div>
 
+            <!-- Who are you viewing for? (logged-in only) -->
+            <div v-if="auth.isLoggedIn" class="flex items-center justify-between mb-4 px-3 py-2 rounded-lg bg-bg-elevated/60 border border-border-subtle">
+              <div class="flex items-center gap-2 text-xs text-text-secondary">
+                <span class="text-gold">✦</span>
+                <span v-if="!isForOther">Đang xem cho: <span class="text-text-primary font-medium">{{ auth.user?.full_name }}</span></span>
+                <span v-else class="text-text-muted">Đang xem cho người khác</span>
+              </div>
+              <button
+                type="button"
+                class="text-xs text-mystic-glow hover:text-mystic transition-colors font-medium"
+                @click="isForOther ? viewForSelf() : viewForOther()"
+              >
+                {{ isForOther ? '← Xem cho bản thân' : 'Xem cho người khác →' }}
+              </button>
+            </div>
+
             <form @submit.prevent="submit" class="space-y-4">
               <AppInput
                 v-model="form.full_name"
@@ -237,7 +257,7 @@ function goToModule(mod: typeof modules[0]) {
 
               <AppButton type="submit" size="lg" class="w-full mt-2" :loading="isLoading">
                 <template v-if="isLoading">
-                  <AppSpinner size="sm" /> Đang luận giải...
+                  Đang luận giải...
                 </template>
                 <template v-else-if="auth.hasActiveCredits">
                   ✦ Xem đầy đủ — 1 lượt
@@ -277,9 +297,9 @@ function goToModule(mod: typeof modules[0]) {
     <!-- ══════════════════════════════════════════════════
          MODULES
     ══════════════════════════════════════════════════ -->
-    <section class="py-20 px-4 relative">
+    <section class="py-20 px-4 relative overflow-hidden">
       <!-- Ambient glow -->
-      <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute inset-0 pointer-events-none overflow-hidden">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-mystic/5 rounded-full blur-[100px]" />
       </div>
 

@@ -6,6 +6,8 @@ export interface User {
   full_name: string
   email: string | null
   phone: string | null
+  birth_date: string | null
+  gender: string | null
   avatar_url: string | null
   role: UserRole
   credits_balance: number

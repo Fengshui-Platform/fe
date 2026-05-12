@@ -8,6 +8,7 @@ import { authService } from '@/services/auth.service'
 import { type AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
+import AppDatePicker from '@/components/common/AppDatePicker.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import { formatDate } from '@/utils/format'
@@ -18,8 +19,10 @@ const ui = useUIStore()
 
 // ── Profile form ──────────────────────────────────────────────
 const profileForm = reactive({
-  full_name: auth.user?.full_name ?? '',
-  phone: auth.user?.phone ?? '',
+  full_name:  auth.user?.full_name  ?? '',
+  phone:      auth.user?.phone      ?? '',
+  birth_date: auth.user?.birth_date ?? '',
+  gender:     auth.user?.gender     ?? '',
 })
 const profileErrors = reactive({ full_name: '', general: '' })
 const savingProfile = ref(false)
@@ -31,8 +34,10 @@ async function saveProfile() {
   savingProfile.value = true
   try {
     const updated = await userService.updateProfile({
-      full_name: profileForm.full_name.trim(),
-      phone: profileForm.phone || undefined,
+      full_name:  profileForm.full_name.trim(),
+      phone:      profileForm.phone || undefined,
+      birth_date: profileForm.birth_date || null,
+      gender:     profileForm.gender || null,
     })
     auth.setUser(updated)
     ui.toast.success('Đã cập nhật thông tin')
@@ -215,6 +220,24 @@ async function deleteAccount() {
               type="tel"
               placeholder="0901234567"
             />
+
+            <AppDatePicker
+              v-model="profileForm.birth_date"
+              label="Ngày sinh (tùy chọn)"
+            />
+
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-text-secondary">Giới tính (tùy chọn)</label>
+              <select
+                v-model="profileForm.gender"
+                class="w-full bg-bg-elevated border border-border-subtle rounded-lg px-4 py-2.5 text-text-primary focus:outline-none focus:border-mystic focus:ring-1 focus:ring-mystic/30 transition-colors"
+              >
+                <option value="">Chọn giới tính</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
 
             <AppButton type="submit" :loading="savingProfile">
               Lưu thay đổi

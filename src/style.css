@@ -46,6 +46,7 @@ html, body {
   background-color: #06060e;
   color: #f1f0ff;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ── Cosmic star field (body background) ── */
