@@ -264,7 +264,7 @@ if (!VALID_MODULES.includes(module.value)) {
               <!-- Submit -->
               <AppButton type="submit" size="lg" class="w-full mt-2" :loading="isLoading">
                 <template v-if="isLoading">
-                  <AppSpinner size="sm" /> Đang phân tích...
+                  Đang phân tích...
                 </template>
                 <template v-else>
                   ✨ Phân tích {{ moduleLabel }}
