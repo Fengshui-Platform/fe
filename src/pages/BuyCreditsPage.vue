@@ -156,7 +156,7 @@ function closeQR() {
           v-for="(pkg, i) in packages"
           :key="pkg.id"
           :class="[
-            'relative rounded-2xl p-6 flex flex-col transition-all duration-300 cursor-pointer overflow-hidden',
+            'relative rounded-2xl p-6 flex flex-col transition-all duration-300 cursor-pointer',
             i === popularIndex
               ? 'bg-bg-card border border-mystic shadow-glow-mystic scale-[1.03]'
               : 'bg-bg-card border border-border-subtle hover:border-border-glow hover:shadow-card hover:-translate-y-1',
