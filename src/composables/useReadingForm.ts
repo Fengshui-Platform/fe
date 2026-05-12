@@ -4,8 +4,8 @@ import type { User } from '@/types/user.types'
 interface MainForm {
   full_name: string
   birth_date: string
-  phone: string
-  gender: string
+  phone?: string
+  gender?: string
 }
 
 export function useReadingForm(getUser: () => User | null, form: MainForm) {
