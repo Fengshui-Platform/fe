@@ -11,7 +11,6 @@ import type { AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
-import AppSpinner from '@/components/common/AppSpinner.vue'
 import { useReadingForm } from '@/composables/useReadingForm'
 
 const route = useRoute()
