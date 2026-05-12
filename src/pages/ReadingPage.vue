@@ -12,6 +12,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
 import AppSpinner from '@/components/common/AppSpinner.vue'
+import { useReadingForm } from '@/composables/useReadingForm'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,6 +49,8 @@ const form = reactive<ReadingInputDto & { partner_name: string; partner_birth_da
   partner_birth_date: '',
   house_direction: '',
 })
+
+const { isForOther, viewForOther, viewForSelf } = useReadingForm(() => auth.user, form)
 
 const errors = reactive<Record<string, string>>({})
 const isLoading = ref(false)
@@ -90,6 +93,7 @@ async function submit() {
       birth_date: form.birth_date,
       phone:      form.phone?.trim() || undefined,
       gender:     form.gender || undefined,
+      for_other:  isForOther.value || undefined,
     }
     if (module.value === 'love') {
       input.partner_name        = form.partner_name.trim()
@@ -156,6 +160,22 @@ if (!VALID_MODULES.includes(module.value)) {
         <div class="backdrop-blur-md bg-bg-card/90 border border-border-glow rounded-2xl overflow-hidden shadow-glow-mystic">
           <div class="h-0.5 bg-gradient-to-r from-gold/60 via-mystic to-neon/60" />
           <div class="p-6">
+            <!-- Who are you viewing for? -->
+            <div class="flex items-center justify-between mb-4 px-3 py-2 rounded-lg bg-bg-elevated/60 border border-border-subtle">
+              <div class="flex items-center gap-2 text-xs text-text-secondary">
+                <span class="text-gold">✦</span>
+                <span v-if="!isForOther">Đang xem cho: <span class="text-text-primary font-medium">{{ auth.user?.full_name }}</span></span>
+                <span v-else class="text-text-muted">Đang xem cho người khác</span>
+              </div>
+              <button
+                type="button"
+                class="text-xs text-mystic-glow hover:text-mystic transition-colors font-medium"
+                @click="isForOther ? viewForSelf() : viewForOther()"
+              >
+                {{ isForOther ? '← Xem cho bản thân' : 'Xem cho người khác →' }}
+              </button>
+            </div>
+
             <form @submit.prevent="submit" class="space-y-4">
 
               <!-- Common fields -->
