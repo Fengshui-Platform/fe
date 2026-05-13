@@ -6,7 +6,7 @@ import type { PaginatedData } from '@/types/api.types'
 export const creditService = {
   async getPackages(): Promise<CreditPackage[]> {
     const { data } = await api.get('/credits/packages')
-    return data.data
+    return (data.data as CreditPackage[]).map(p => ({ ...p, price: Number(p.price) }))
   },
 
   async getBalance(): Promise<CreditsBalance> {
