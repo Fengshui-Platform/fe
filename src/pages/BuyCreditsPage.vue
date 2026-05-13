@@ -44,8 +44,11 @@ onUnmounted(() => {
 })
 
 const popularIndex = computed(() => {
-  const sorted = [...packages.value].sort((a, b) => b.credits - a.credits)
-  return packages.value.indexOf(sorted[1] ?? sorted[0])
+  if (!packages.value.length) return -1
+  const sorted = [...packages.value]
+    .map((p, i) => ({ i, price: Number(p.price) }))
+    .sort((a, b) => a.price - b.price)
+  return sorted[Math.floor(sorted.length / 2)].i
 })
 
 async function selectPackage(pkg: CreditPackage) {

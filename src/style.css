@@ -26,8 +26,8 @@
   --color-border-glow:   #7c3aed40;
 
   /* Fonts */
-  --font-sans:  Inter, ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans:  "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
 
   /* Shadows */
   --shadow-glow-gold:   0 0 24px rgba(245,200,66,0.35);
@@ -302,6 +302,25 @@ body::before {
 /* ══════════════════════════════════════════
    AURA / QUẦ SÁNG THIÊN CƠ
    ══════════════════════════════════════════ */
+@keyframes nebula-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(30px, -20px) scale(1.06); }
+  70%       { transform: translate(-15px, 15px) scale(0.96); }
+}
+@keyframes nebula-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  35%       { transform: translate(-25px, 20px) scale(1.08); }
+  65%       { transform: translate(20px, -10px) scale(0.94); }
+}
+@keyframes nebula-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  45%       { transform: translate(20px, 25px) scale(1.05); }
+  75%       { transform: translate(-20px, -15px) scale(0.97); }
+}
+.animate-nebula-a { animation: nebula-a 28s ease-in-out infinite; }
+.animate-nebula-b { animation: nebula-b 35s ease-in-out infinite; }
+.animate-nebula-c { animation: nebula-c 32s ease-in-out infinite; }
+
 @keyframes aura-expand {
   0%   { transform: scale(1);   opacity: 0.45; }
   100% { transform: scale(1.9); opacity: 0; }

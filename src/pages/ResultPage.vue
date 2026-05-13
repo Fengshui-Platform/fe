@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useReadingStore } from '@/stores/reading'
 import { useAuthStore } from '@/stores/auth'
@@ -8,10 +8,14 @@ import ThemeBackground from '@/components/reading/ThemeBackground.vue'
 import { MODULE_LABELS, MODULE_ICONS, type ReadingModule } from '@/types/reading.types'
 import { usePageTheme } from '@/composables/usePageTheme'
 import { TIME_FILTERS } from '@/config/themeConfig'
+import { useCheapestPackage } from '@/composables/useCheapestPackage'
 
 const router = useRouter()
 const readingStore = useReadingStore()
 const auth = useAuthStore()
+
+const { cheapestFromLabel, cheapestBuyLabel, fetchIfNeeded } = useCheapestPackage()
+onMounted(fetchIfNeeded)
 
 const rawResult = computed(() => readingStore.currentResult)
 const input     = computed(() => readingStore.currentInput)
@@ -507,7 +511,7 @@ function asString(v: unknown): string {
               <RouterLink to="/buy-credits"><AppButton size="sm">Mua lượt</AppButton></RouterLink>
             </div>
             <RouterLink v-else to="/buy-credits">
-              <AppButton size="sm">Mua lượt — từ 79.000đ</AppButton>
+              <AppButton size="sm">Mua lượt{{ cheapestFromLabel ? ` — ${cheapestFromLabel}` : '' }}</AppButton>
             </RouterLink>
           </div>
         </div>
@@ -560,7 +564,7 @@ function asString(v: unknown): string {
             <AppButton size="lg" class="w-full">🔥 Gia hạn lượt — tiếp tục xem ngay</AppButton>
           </RouterLink>
           <RouterLink v-else-if="upsellState === 'empty'" to="/buy-credits">
-            <AppButton size="lg" class="w-full">⚡ Mua 20 lượt chỉ 79.000đ — Xem ngay</AppButton>
+            <AppButton size="lg" class="w-full">⚡ {{ cheapestBuyLabel || 'Mua lượt ngay' }} — Xem ngay</AppButton>
           </RouterLink>
           <RouterLink v-else-if="upsellState === 'guest'" to="/login">
             <AppButton size="lg" class="w-full" variant="secondary">Đăng nhập để bắt đầu</AppButton>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useReadingStore } from '@/stores/reading'
 import { useAuthStore } from '@/stores/auth'
@@ -9,8 +9,9 @@ import { type AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
-
+import AstroBackground from '@/components/layout/AstroBackground.vue'
 import { useReadingForm } from '@/composables/useReadingForm'
+import { useCheapestPackage } from '@/composables/useCheapestPackage'
 
 const router = useRouter()
 const readingStore = useReadingStore()
@@ -25,6 +26,9 @@ const form = reactive({
 })
 
 const { isForOther, viewForOther, viewForSelf } = useReadingForm(() => auth.user, form)
+
+const { cheapestFromLabel, fetchIfNeeded } = useCheapestPackage()
+onMounted(fetchIfNeeded)
 
 const errors = reactive({ full_name: '', birth_date: '' })
 const isLoading = ref(false)
@@ -115,45 +119,8 @@ function goToModule(mod: typeof modules[0]) {
     ══════════════════════════════════════════════════ -->
     <section class="relative flex-1 flex flex-col items-center justify-center px-4 py-24 overflow-hidden min-h-[92vh]">
 
-      <!-- Layered cosmic background -->
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
-        <!-- Deep radial glows -->
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-mystic/8 rounded-full blur-[100px]" />
-        <div class="absolute top-1/3 left-1/5 w-[350px] h-[350px] bg-mystic/10 rounded-full blur-[70px]" />
-        <div class="absolute bottom-1/4 right-1/5 w-[300px] h-[300px] bg-gold/6 rounded-full blur-[60px]" />
-        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-neon/5 rounded-full blur-[80px]" />
-
-        <!-- Giant faint ☯ watermark -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[520px] leading-none text-mystic/[0.025] select-none pointer-events-none">
-          ☯
-        </div>
-
-        <!-- Orbital rings -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[680px] h-[680px] rounded-full border border-mystic/[0.08] animate-spin-slow" />
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-full border border-gold/[0.07] animate-spin-slow-reverse" />
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] rounded-full border border-neon/[0.06] animate-spin-slow" style="animation-duration:50s" />
-
-        <!-- Orbiting dots -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[680px] h-[680px] animate-spin-slow">
-          <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-mystic-glow shadow-glow-mystic" />
-          <div class="absolute top-1/2 -right-1.5 w-2 h-2 rounded-full bg-mystic/60" />
-        </div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] animate-spin-slow-reverse">
-          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gold shadow-glow-gold" />
-        </div>
-
-        <!-- Floating mystical symbols -->
-        <span class="absolute top-[14%] left-[7%]  text-3xl text-gold/20   animate-drift"  style="--delay:0s;  animation-duration:8s">☽</span>
-        <span class="absolute top-[22%] right-[9%]  text-2xl text-mystic-glow/25 animate-float"  style="animation-delay:1.5s;animation-duration:10s">✦</span>
-        <span class="absolute top-[58%] left-[5%]  text-xl  text-gold/18   animate-float"  style="animation-delay:3s;  animation-duration:9s">♃</span>
-        <span class="absolute top-[68%] right-[7%]  text-2xl text-neon/18   animate-drift"  style="--delay:2s;  animation-duration:7s">☿</span>
-        <span class="absolute top-[38%] left-[11%] text-lg  text-gold/15   animate-float"  style="animation-delay:4.5s;animation-duration:11s">✧</span>
-        <span class="absolute top-[43%] right-[13%] text-xl  text-mystic-glow/20 animate-drift"  style="--delay:0.5s;animation-duration:9s">♄</span>
-        <span class="absolute top-[78%] left-[18%] text-base text-gold/12  animate-float"  style="animation-delay:2.5s;animation-duration:8s">⊕</span>
-        <span class="absolute top-[8%]  right-[22%] text-sm  text-mystic/25  animate-float"  style="animation-delay:1s;  animation-duration:12s">☊</span>
-        <span class="absolute bottom-[12%] right-[18%] text-lg text-gold/15 animate-drift" style="--delay:3.5s;animation-duration:10s">☰</span>
-        <span class="absolute bottom-[20%] left-[25%] text-base text-neon/15 animate-float" style="animation-delay:2s;animation-duration:8s">☷</span>
-      </div>
+      <!-- Cinematic astro background -->
+      <AstroBackground />
 
       <!-- ── Badge ── -->
       <div class="relative mb-10 text-center">
@@ -203,7 +170,7 @@ function goToModule(mod: typeof modules[0]) {
               <h2 class="font-serif text-xl text-gold mb-1">
                 {{ auth.hasActiveCredits ? 'Luận giải đầy đủ' : 'Luận giải miễn phí' }}
               </h2>
-              <p class="text-xs text-text-muted tracking-wider uppercase">Thần số học · Vận mệnh · Đường đời</p>
+              <p class="text-xs text-white/50 tracking-wider uppercase">Thần số học · Vận mệnh · Đường đời</p>
             </div>
 
             <!-- Who are you viewing for? (logged-in only) -->
@@ -268,9 +235,9 @@ function goToModule(mod: typeof modules[0]) {
               </AppButton>
             </form>
 
-            <p class="text-xs text-text-muted text-center mt-4 leading-relaxed">
+            <p class="text-xs text-white/40 text-center mt-4 leading-relaxed">
               <template v-if="auth.hasActiveCredits">
-                Tốn 1 lượt · Kết quả đầy đủ, không khoá · Còn {{ auth.user?.credits_balance }} lượt
+                Tốn 1 lượt · Kết quả đầy đủ · Còn {{ auth.user?.credits_balance }} lượt
               </template>
               <template v-else>
                 Miễn phí 1 lần / ngày · Không cần đăng ký
@@ -369,7 +336,7 @@ function goToModule(mod: typeof modules[0]) {
         <div class="text-center mt-12">
           <RouterLink to="/buy-credits">
             <AppButton size="lg">
-              ✦ Mua lượt — Từ 79.000đ / 20 lượt
+              ✦ Mua lượt — {{ cheapestFromLabel || 'Xem ngay' }}
             </AppButton>
           </RouterLink>
           <p class="text-xs text-text-muted mt-3">Không giới hạn · Không hết hạn trong 50 ngày · Hoàn tiền nếu lỗi</p>
