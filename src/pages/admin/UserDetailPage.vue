@@ -69,9 +69,9 @@ async function doLockToggle() {
   if (!user.value) return
   isLocking.value = true
   try {
-    const is_active = user.value.is_active ? 0 : 1
-    await adminService.updateUser(userId, { is_active })
-    ui.toast.success(is_active ? 'Đã mở khoá tài khoản' : 'Đã khoá tài khoản')
+    const is_verified = user.value.is_verified ? 0 : 1
+    await adminService.updateUser(userId, { is_verified })
+    ui.toast.success(is_verified ? 'Đã mở khoá tài khoản' : 'Đã khoá tài khoản')
     lockModal.value = false
     loadUser()
   } catch {
@@ -130,8 +130,8 @@ onMounted(loadUser)
                   <AppBadge :variant="user.role === 'admin' ? 'mystic' : 'default'" size="sm">
                     {{ user.role === 'admin' ? '⚡ Admin' : '👤 User' }}
                   </AppBadge>
-                  <AppBadge :variant="user.is_active ? 'active' : 'empty'" size="sm">
-                    {{ user.is_active ? 'Hoạt động' : 'Đã khoá' }}
+                  <AppBadge :variant="user.is_verified ? 'active' : 'empty'" size="sm">
+                    {{ user.is_verified ? 'Hoạt động' : 'Đã khoá' }}
                   </AppBadge>
                 </div>
               </div>
@@ -188,13 +188,13 @@ onMounted(loadUser)
                 💳 Cấp / Trừ lượt
               </AppButton>
               <AppButton
-                :variant="user.is_active ? 'danger' : 'secondary'"
+                :variant="user.is_verified ? 'danger' : 'secondary'"
                 class="w-full"
                 @click="lockModal = true"
               >
-                {{ user.is_active ? '🔒 Khoá tài khoản' : '🔓 Mở khoá tài khoản' }}
+                {{ user.is_verified ? '🔒 Khoá tài khoản' : '🔓 Mở khoá tài khoản' }}
               </AppButton>
-              <AppButton variant="danger" class="w-full" @click="deleteModal = true">
+              <AppButton v-if="user.role !== 'admin'" variant="danger" class="w-full" @click="deleteModal = true">
                 🗑️ Xoá tài khoản
               </AppButton>
             </div>
@@ -232,16 +232,16 @@ onMounted(loadUser)
     </AppModal>
 
     <!-- Lock/unlock modal -->
-    <AppModal :show="lockModal" :title="user?.is_active ? 'Khoá tài khoản' : 'Mở khoá tài khoản'" @close="lockModal = false">
+    <AppModal :show="lockModal" :title="user?.is_verified ? 'Khoá tài khoản' : 'Mở khoá tài khoản'" @close="lockModal = false">
       <p class="text-text-secondary mb-5">
         Bạn có chắc muốn
-        <strong class="text-text-primary">{{ user?.is_active ? 'khoá' : 'mở khoá' }}</strong>
+        <strong class="text-text-primary">{{ user?.is_verified ? 'khoá' : 'mở khoá' }}</strong>
         tài khoản <strong class="text-gold">{{ user?.full_name }}</strong>?
       </p>
       <div class="flex justify-end gap-3">
         <AppButton variant="ghost" @click="lockModal = false">Huỷ</AppButton>
-        <AppButton :variant="user?.is_active ? 'danger' : 'primary'" :loading="isLocking" @click="doLockToggle">
-          {{ user?.is_active ? 'Khoá' : 'Mở khoá' }}
+        <AppButton :variant="user?.is_verified ? 'danger' : 'primary'" :loading="isLocking" @click="doLockToggle">
+          {{ user?.is_verified ? 'Khoá' : 'Mở khoá' }}
         </AppButton>
       </div>
     </AppModal>

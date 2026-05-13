@@ -27,7 +27,7 @@ export interface AdminUser {
   credits_balance: number
   credits_expires_at: string | null
   credits_status: 'active' | 'frozen' | 'empty'
-  is_active: number
+  is_verified: number
   created_at: string
 }
 
@@ -125,7 +125,7 @@ export const adminService = {
     return data.data
   },
 
-  async updateUser(id: number, dto: { is_active?: number; role?: string }): Promise<AdminUser> {
+  async updateUser(id: number, dto: { is_verified?: number; role?: string }): Promise<AdminUser> {
     const { data } = await api.put(`/admin/users/${id}`, dto)
     return data.data
   },

@@ -311,7 +311,7 @@ async function deleteAccount() {
       </div>
 
       <!-- ─── Danger Zone ─── -->
-      <div class="bg-bg-card border border-red-500/20 rounded-2xl p-6">
+      <div v-if="auth.user?.role !== 'admin'" class="bg-bg-card border border-red-500/20 rounded-2xl p-6">
         <h2 class="text-xs font-semibold text-red-400/80 uppercase tracking-widest mb-2 flex items-center gap-2">
           <span>⚠</span> Vùng nguy hiểm
         </h2>

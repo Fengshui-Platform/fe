@@ -49,8 +49,8 @@ async function loadUsers() {
   try {
     const params: Record<string, unknown> = { page: page.value, limit }
     if (searchQuery.value) params.search = searchQuery.value
-    if (activeFilter.value === 'active') params.is_active = 1
-    if (activeFilter.value === 'locked') params.is_active = 0
+    if (activeFilter.value === 'active') params.is_verified = 1
+    if (activeFilter.value === 'locked') params.is_verified = 0
     result.value = await adminService.getUsers(params)
   } catch {
     ui.toast.error('Không thể tải danh sách người dùng')
@@ -69,8 +69,8 @@ async function doConfirm() {
   if (!confirmTarget.value) return
   isConfirming.value = true
   try {
-    const is_active = confirmAction.value === 'unlock' ? 1 : 0
-    await adminService.updateUser(confirmTarget.value.id, { is_active })
+    const is_verified = confirmAction.value === 'unlock' ? 1 : 0
+    await adminService.updateUser(confirmTarget.value.id, { is_verified })
     ui.toast.success(confirmAction.value === 'unlock' ? 'Đã mở khoá tài khoản' : 'Đã khoá tài khoản')
     confirmModal.value = false
     loadUsers()
@@ -164,8 +164,8 @@ onMounted(loadUsers)
                   </AppBadge>
                 </td>
                 <td class="px-4 py-3">
-                  <AppBadge :variant="user.is_active ? 'active' : 'empty'" size="sm">
-                    {{ user.is_active ? 'Hoạt động' : 'Đã khoá' }}
+                  <AppBadge :variant="user.is_verified ? 'active' : 'empty'" size="sm">
+                    {{ user.is_verified ? 'Hoạt động' : 'Đã khoá' }}
                   </AppBadge>
                 </td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ formatDate(user.created_at) }}</td>
@@ -173,11 +173,11 @@ onMounted(loadUsers)
                   <div class="flex items-center gap-2">
                     <AppButton variant="ghost" size="sm" @click="goToDetail(user)">Xem</AppButton>
                     <AppButton
-                      :variant="user.is_active ? 'danger' : 'secondary'"
+                      :variant="user.is_verified ? 'danger' : 'secondary'"
                       size="sm"
-                      @click="openConfirm(user, user.is_active ? 'lock' : 'unlock')"
+                      @click="openConfirm(user, user.is_verified ? 'lock' : 'unlock')"
                     >
-                      {{ user.is_active ? 'Khoá' : 'Mở khoá' }}
+                      {{ user.is_verified ? 'Khoá' : 'Mở khoá' }}
                     </AppButton>
                   </div>
                 </td>
