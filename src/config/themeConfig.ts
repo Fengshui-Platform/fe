@@ -113,6 +113,16 @@ const MODULE_BASES: Record<ReadingModule, Pick<ThemeConfig,
     heroGradient:    'radial-gradient(ellipse 100% 80% at 50% -5%, rgba(14,116,144,0.50) 0%, transparent 65%)',
     hasLightRays:    false,
   },
+  zodiac: {
+    primaryColor:    '#1e1b4b',
+    accentColor:     '#a5b4fc',
+    glassBackground: 'rgba(10,8,50,0.50)',
+    glowColor:       'rgba(165,180,252,0.45)',
+    textAccent:      '#f5c842',
+    baseGradient:    'radial-gradient(ellipse 80% 60% at 20% 10%, rgba(30,27,90,0.45) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(50,10,90,0.35) 0%, transparent 70%)',
+    heroGradient:    'radial-gradient(ellipse 100% 75% at 50% -5%, rgba(99,102,241,0.55) 0%, transparent 65%)',
+    hasLightRays:    true,
+  },
 }
 
 // ── Ngũ hành particle overrides ───────────────────────────────────────────────
@@ -134,6 +144,7 @@ const MODULE_PARTICLES: Record<ReadingModule, ParticleConfig> = {
   finance:       { type: 'coin',   color: '#f5c842', secondaryColor: '#fde68a', count: 20, speed: 'medium', direction: 'diagonal-right', size: 'md' },
   fengshui_home: { type: 'leaf',   color: '#34d399', secondaryColor: '#86efac', count: 18, speed: 'slow',   direction: 'diagonal-left',  size: 'md' },
   sim:           { type: 'spark',  color: '#22d3ee', secondaryColor: '#67e8f9', count: 22, speed: 'medium', direction: 'radial',         size: 'sm' },
+  zodiac:        { type: 'star',   color: '#a5b4fc', secondaryColor: '#f5c842', count: 80, speed: 'slow',   direction: 'float',          size: 'sm' },
 }
 
 // ── Silhouette positions per zodiac ───────────────────────────────────────────

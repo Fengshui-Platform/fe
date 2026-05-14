@@ -1,4 +1,4 @@
-export type ReadingModule = 'numerology' | 'love' | 'finance' | 'sim' | 'fengshui_home' | 'horoscope'
+export type ReadingModule = 'numerology' | 'love' | 'finance' | 'sim' | 'fengshui_home' | 'horoscope' | 'zodiac'
 
 export interface ReadingInputDto {
   full_name: string
@@ -50,6 +50,7 @@ export const MODULE_LABELS: Record<ReadingModule, string> = {
   sim:           'Sim phong thuỷ',
   fengshui_home: 'Phong thuỷ nhà ở',
   horoscope:     'Tử vi năm',
+  zodiac:        'Cung Hoàng Đạo',
 }
 
 export const MODULE_ICONS: Record<ReadingModule, string> = {
@@ -59,4 +60,5 @@ export const MODULE_ICONS: Record<ReadingModule, string> = {
   sim:           '📱',
   fengshui_home: '🏠',
   horoscope:     '⭐',
+  zodiac:        '♈',
 }
