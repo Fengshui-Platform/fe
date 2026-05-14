@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import AppButton from '@/components/common/AppButton.vue'
 import ThemeBackground from '@/components/reading/ThemeBackground.vue'
 import { MODULE_LABELS, MODULE_ICONS, type ReadingModule } from '@/types/reading.types'
+import { getWesternZodiacSign } from '@/utils/zodiac'
 import { usePageTheme } from '@/composables/usePageTheme'
 import { TIME_FILTERS } from '@/config/themeConfig'
 import { useCheapestPackage } from '@/composables/useCheapestPackage'
@@ -100,7 +101,12 @@ const summaryLabel: Partial<Record<ReadingModule, string>> = {
   sim:           'Nhận xét tổng quan sim',
   fengshui_home: 'Tổng quan phong thuỷ nhà',
   horoscope:     'Tổng quan vận hạn năm',
+  zodiac:        'Tổng quan cung hoàng đạo',
 }
+
+const westernZodiacDisplay = computed(() =>
+  module.value === 'zodiac' ? getWesternZodiacSign(input.value?.birth_date ?? '') : null
+)
 
 const summaryText = computed(() => result.value?.summary ?? '')
 
@@ -142,6 +148,7 @@ const premiumModules = [
   { key: 'sim',           icon: '📱', name: 'Sim phong thuỷ' },
   { key: 'fengshui_home', icon: '🏠', name: 'Phong thuỷ nhà ở' },
   { key: 'horoscope',     icon: '⭐', name: 'Tử vi năm' },
+  { key: 'zodiac',        icon: '♈', name: 'Cung Hoàng Đạo' },
 ].filter(m => m.key !== module.value)
 
 const upsellState = computed<'active' | 'frozen' | 'empty' | 'guest'>(() => {
@@ -260,6 +267,33 @@ function asString(v: unknown): string {
           <div class="inline-flex items-center gap-2 mt-3 px-4 py-1.5 bg-gold/10 border border-gold/30 rounded-full">
             <span>🧭</span>
             <span class="text-gold text-sm font-medium">Hướng {{ input.house_direction }}</span>
+          </div>
+        </template>
+
+        <!-- Zodiac: western sign badge -->
+        <template v-else-if="module === 'zodiac' && westernZodiacDisplay">
+          <div class="flex items-center justify-center gap-2 mt-4 flex-wrap">
+            <div
+              class="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border text-sm font-medium"
+              :style="{
+                borderColor: theme.accentColor + '60',
+                background: theme.primaryColor + '30',
+                color: theme.accentColor,
+              }"
+            >
+              <span class="text-2xl leading-none">{{ westernZodiacDisplay.symbol }}</span>
+              <span class="font-serif tracking-wider">{{ westernZodiacDisplay.nameVi }}</span>
+            </div>
+            <div
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs font-medium uppercase tracking-widest"
+              :style="{
+                color: westernZodiacDisplay.elementColor,
+                backgroundColor: westernZodiacDisplay.elementColor + '20',
+                borderColor: westernZodiacDisplay.elementColor + '50',
+              }"
+            >
+              {{ westernZodiacDisplay.elementVi }}
+            </div>
           </div>
         </template>
 

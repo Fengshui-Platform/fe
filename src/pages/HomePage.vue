@@ -89,12 +89,12 @@ async function submit() {
 }
 
 const modules = [
-  { symbol: '∞',  symbolClass: 'text-gold',         frameClass: 'border-gold/40 text-gold',         element: '命數', elemClass: 'text-gold/80 bg-gold/8 border-gold/25',           name: 'Thần số học',     desc: 'Khám phá con số vận mệnh, đường đời và linh số ẩn chứa trong tên và ngày sinh', free: true,  route: 'numerology' },
   { symbol: '☽',  symbolClass: 'text-rose-300',     frameClass: 'border-rose-400/40 text-rose-300', element: '姻緣', elemClass: 'text-rose-300/80 bg-rose-500/8 border-rose-400/25', name: 'Tình duyên',      desc: 'Luận tương hợp theo ngày sinh, hợp số và con đường tình cảm', free: false, route: 'love' },
   { symbol: '☉',  symbolClass: 'text-amber-300',    frameClass: 'border-amber-400/40 text-amber-300', element: '財祿', elemClass: 'text-amber-300/80 bg-amber-500/8 border-amber-400/25', name: 'Tài lộc',        desc: 'Năm tài lộc vượng suy, tháng tốt xấu, hướng phát tài theo mệnh số', free: false, route: 'finance' },
   { symbol: '☿',  symbolClass: 'text-cyan-300',     frameClass: 'border-cyan-400/40 text-cyan-300', element: '水靈', elemClass: 'text-cyan-300/80 bg-cyan-500/8 border-cyan-400/25',   name: 'Sim phong thuỷ', desc: 'Giải mã năng lượng ẩn sau dãy số điện thoại theo thần số học', free: false, route: 'sim' },
   { symbol: '⊕',  symbolClass: 'text-emerald-300',  frameClass: 'border-emerald-400/40 text-emerald-300', element: '風水', elemClass: 'text-emerald-300/80 bg-emerald-500/8 border-emerald-400/25', name: 'Phong thuỷ nhà ở', desc: 'Hướng nhà vượng khí, bố trí nội thất hài hoà theo bát quái và cung mệnh', free: false, route: 'fengshui_home' },
   { symbol: '✦',  symbolClass: 'text-purple-300',   frameClass: 'border-purple-400/40 text-purple-300', element: '紫微', elemClass: 'text-purple-300/80 bg-purple-500/8 border-purple-400/25', name: 'Tử vi năm',      desc: 'Lá số tử vi, luận vận hạn từng năm và những bước ngoặt định mệnh', free: false, route: 'horoscope' },
+  { symbol: '♈',  symbolClass: 'text-indigo-300',  frameClass: 'border-indigo-400/40 text-indigo-300', element: '星座', elemClass: 'text-indigo-300/80 bg-indigo-500/8 border-indigo-400/25', name: 'Cung Hoàng Đạo', desc: 'Khám phá bí mật 12 cung hoàng đạo phương Tây, kết hợp thần số để hiểu sâu vận mệnh', free: false, route: 'zodiac' },
 ]
 
 function goToModule(mod: typeof modules[0]) {
@@ -168,9 +168,11 @@ function goToModule(mod: typeof modules[0]) {
                 ✦
               </div>
               <h2 class="font-serif text-xl text-gold mb-1">
-                {{ auth.hasActiveCredits ? 'Luận giải đầy đủ' : 'Luận giải miễn phí' }}
+                Thần Số Học
               </h2>
-              <p class="text-xs text-white/50 tracking-wider uppercase">Thần số học · Vận mệnh · Đường đời</p>
+              <p class="text-xs text-white/50 tracking-wider uppercase">
+                {{ auth.hasActiveCredits ? 'Luận giải đầy đủ · 1 lượt' : 'Miễn phí · 1 lần / ngày' }}
+              </p>
             </div>
 
             <!-- Who are you viewing for? (logged-in only) -->
@@ -278,7 +280,7 @@ function goToModule(mod: typeof modules[0]) {
             Thiên Cơ <span class="gradient-text-celestial">Huyền Học</span>
           </h2>
           <p class="text-text-secondary max-w-lg mx-auto">
-            6 bộ môn phân tích theo truyền thống phong thuỷ phương Đông — chuyên sâu và cá nhân hoá
+            6 bộ môn phân tích chuyên sâu — trả phí 1 lượt, cá nhân hoá hoàn toàn
           </p>
         </div>
 

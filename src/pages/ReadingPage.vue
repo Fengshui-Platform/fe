@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { readingService } from '@/services/reading.service'
 import type { ReadingModule, ReadingInputDto } from '@/types/reading.types'
 import { MODULE_LABELS, MODULE_ICONS } from '@/types/reading.types'
+import { getWesternZodiacSign } from '@/utils/zodiac'
 import type { AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
@@ -23,7 +24,7 @@ const module = computed(() => route.params.module as ReadingModule)
 const moduleLabel = computed(() => MODULE_LABELS[module.value] ?? module.value)
 const moduleIcon  = computed(() => MODULE_ICONS[module.value] ?? '✨')
 
-const VALID_MODULES: ReadingModule[] = ['numerology', 'love', 'finance', 'sim', 'fengshui_home', 'horoscope']
+const VALID_MODULES: ReadingModule[] = ['numerology', 'love', 'finance', 'sim', 'fengshui_home', 'horoscope', 'zodiac']
 
 const HOUSE_DIRECTIONS = [
   'Bắc', 'Nam', 'Đông', 'Tây',
@@ -37,6 +38,7 @@ const MODULE_DESC: Record<ReadingModule, string> = {
   sim:           'Đánh giá năng lượng phong thuỷ của số điện thoại bạn đang dùng',
   fengshui_home: 'Phân tích phong thuỷ nhà ở theo hướng nhà và bản mệnh gia chủ',
   horoscope:     'Luận tử vi và dự báo vận hạn toàn diện cho năm hiện tại',
+  zodiac:        'Phân tích cung hoàng đạo phương Tây kết hợp thần số học — khám phá bản chất sâu xa của bạn',
 }
 
 const form = reactive<ReadingInputDto & { partner_name: string; partner_birth_date: string; house_direction: string }>({
@@ -53,6 +55,10 @@ const { isForOther, viewForOther, viewForSelf } = useReadingForm(() => auth.user
 
 const errors = reactive<Record<string, string>>({})
 const isLoading = ref(false)
+
+const zodiacPreview = computed(() =>
+  module.value === 'zodiac' ? getWesternZodiacSign(form.birth_date) : null
+)
 
 function validate(): boolean {
   const e: Record<string, string> = {}
@@ -191,6 +197,23 @@ if (!VALID_MODULES.includes(module.value)) {
                 :error="errors.birth_date"
                 required
               />
+
+              <!-- Zodiac: live preview badge -->
+              <transition name="fade">
+                <div
+                  v-if="module === 'zodiac' && zodiacPreview"
+                  class="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-500/10 border border-indigo-400/30"
+                >
+                  <span class="text-xl">{{ zodiacPreview.symbol }}</span>
+                  <div>
+                    <span class="text-sm font-medium text-indigo-300">{{ zodiacPreview.nameVi }}</span>
+                    <span
+                      class="ml-2 text-xs px-1.5 py-0.5 rounded-full font-medium"
+                      :style="{ color: zodiacPreview.elementColor, backgroundColor: zodiacPreview.elementColor + '20', border: `1px solid ${zodiacPreview.elementColor}40` }"
+                    >{{ zodiacPreview.elementVi }}</span>
+                  </div>
+                </div>
+              </transition>
 
               <!-- Gender (most modules) -->
               <div v-if="module !== 'sim'" class="space-y-1.5">
