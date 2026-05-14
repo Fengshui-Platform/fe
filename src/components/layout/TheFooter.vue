@@ -1,5 +1,30 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const services: { symbol: string; name: string; module: string }[] = [
+  { symbol: '☽', name: 'Tình duyên',      module: 'love' },
+  { symbol: '☉', name: 'Tài lộc',         module: 'finance' },
+  { symbol: '☿', name: 'Sim phong thuỷ',  module: 'sim' },
+  { symbol: '⊕', name: 'Phong thuỷ nhà',  module: 'fengshui_home' },
+  { symbol: '✦', name: 'Tử vi năm',       module: 'horoscope' },
+  { symbol: '♈', name: 'Cung Hoàng Đạo', module: 'zodiac' },
+]
+
+function goToService(module: string) {
+  if (!auth.isLoggedIn) {
+    router.push({ name: 'Login', query: { redirect: `/reading/${module}` } })
+    return
+  }
+  if (auth.hasActiveCredits) {
+    router.push({ name: 'Reading', params: { module } })
+  } else {
+    router.push({ name: 'BuyCredits' })
+  }
+}
 </script>
 
 <template>
@@ -55,28 +80,17 @@ import { RouterLink } from 'vue-router'
             <ul class="space-y-2.5 text-sm text-text-muted">
               <li>
                 <RouterLink to="/" class="hover:text-gold transition-colors inline-flex items-center gap-1.5">
-                  <span class="text-xs text-gold/40">✦</span> Thần số học
+                  <span class="text-xs text-gold/40">∞</span> Thần số học
                 </RouterLink>
               </li>
-              <li>
-                <RouterLink to="/buy-credits" class="hover:text-gold transition-colors inline-flex items-center gap-1.5">
-                  <span class="text-xs text-gold/40">☽</span> Tình duyên
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/buy-credits" class="hover:text-gold transition-colors inline-flex items-center gap-1.5">
-                  <span class="text-xs text-gold/40">☉</span> Tài lộc
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/buy-credits" class="hover:text-gold transition-colors inline-flex items-center gap-1.5">
-                  <span class="text-xs text-gold/40">☿</span> Sim phong thuỷ
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/buy-credits" class="hover:text-gold transition-colors inline-flex items-center gap-1.5">
-                  <span class="text-xs text-gold/40">⊕</span> Phong thuỷ nhà
-                </RouterLink>
+              <li v-for="svc in services" :key="svc.module">
+                <button
+                  type="button"
+                  class="hover:text-gold cursor-pointer transition-colors inline-flex items-center gap-1.5 text-left"
+                  @click="goToService(svc.module)"
+                >
+                  <span class="text-xs text-gold/40">{{ svc.symbol }}</span> {{ svc.name }}
+                </button>
               </li>
             </ul>
           </div>
