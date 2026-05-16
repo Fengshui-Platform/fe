@@ -148,15 +148,19 @@ async function deleteAccount() {
               <p class="text-text-muted text-xs mt-1">Tham gia {{ formatDate(auth.user?.created_at ?? '') }}</p>
             </div>
 
+            <!-- [PAID_FEATURE_DISABLED] Badge số dư lượt — đã ẩn
+                 Để bật lại: uncomment AppBadge dưới
             <AppBadge :variant="auth.user?.credits_status ?? 'empty'">
               ✦ {{ auth.user?.credits_balance }} lượt
             </AppBadge>
+            -->
           </div>
 
         </div>
       </div>
 
-      <!-- ─── Credits Info ─── -->
+      <!-- [PAID_FEATURE_DISABLED] Khối Credits Info — đã ẩn hoàn toàn
+           Để bật lại: uncomment toàn bộ đoạn dưới đây
       <div class="bg-bg-card border border-border-subtle rounded-2xl overflow-hidden">
         <div class="h-0.5 bg-gradient-to-r from-gold/40 via-gold to-gold/40" />
         <div class="p-6">
@@ -182,6 +186,7 @@ async function deleteAccount() {
           </div>
         </div>
       </div>
+      -->
 
       <!-- ─── Edit Profile ─── -->
       <div class="bg-bg-card border border-border-subtle rounded-2xl overflow-hidden">

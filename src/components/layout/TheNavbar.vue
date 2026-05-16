@@ -78,12 +78,14 @@ async function logout() {
 
           <!-- Logged in -->
           <template v-else>
-            <!-- Credits badge — chỉ hiện khi đang active -->
-            <RouterLink v-if="auth.hasActiveCredits" to="/buy-credits" class="hover:opacity-80 transition-opacity">
-              <AppBadge variant="active">
-                ✦ {{ creditsLabel }}
-              </AppBadge>
-            </RouterLink>
+          <!-- [PAID_FEATURE_DISABLED] Credits badge — đã ẩn
+               Để bật lại: uncomment đoạn code dưới
+          <RouterLink v-if="auth.hasActiveCredits" to="/buy-credits" class="hover:opacity-80 transition-opacity">
+            <AppBadge variant="active">
+              ✦ {{ creditsLabel }}
+            </AppBadge>
+          </RouterLink>
+          -->
 
             <!-- User menu -->
             <div class="relative">
@@ -121,6 +123,8 @@ async function logout() {
                   >
                     <span>👤</span> Hồ sơ
                   </RouterLink>
+                  <!-- [PAID_FEATURE_DISABLED] Mua lượt + Lịch sử giao dịch — đã ẩn
+                       Để bật lại: uncomment 2 RouterLink dưới
                   <RouterLink
                     to="/buy-credits"
                     @click="menuOpen = false"
@@ -135,6 +139,7 @@ async function logout() {
                   >
                     <span>💳</span> Lịch sử giao dịch
                   </RouterLink>
+                  -->
                   <RouterLink
                     v-if="auth.isAdmin"
                     to="/admin"
@@ -195,6 +200,8 @@ async function logout() {
             </RouterLink>
           </template>
           <template v-else>
+            <!-- [PAID_FEATURE_DISABLED] Link mua lượt mobile — đã ẩn
+                 Để bật lại: uncomment RouterLink dưới
             <RouterLink
               v-if="auth.hasActiveCredits"
               to="/buy-credits"
@@ -203,6 +210,7 @@ async function logout() {
             >
               ✦ {{ creditsLabel }}
             </RouterLink>
+            -->
             <RouterLink
               to="/profile"
               @click="menuOpen=false"

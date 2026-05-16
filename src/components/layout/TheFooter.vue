@@ -19,11 +19,14 @@ function goToService(module: string) {
     router.push({ name: 'Login', query: { redirect: `/reading/${module}` } })
     return
   }
-  if (auth.hasActiveCredits) {
-    router.push({ name: 'Reading', params: { module } })
-  } else {
-    router.push({ name: 'BuyCredits' })
-  }
+  // [PAID_FEATURE_DISABLED] — đã bỏ check credits, cho vào thẳng trang reading
+  // Để bật lại: khôi phục khối if (auth.hasActiveCredits) ... else { router.push BuyCredits }
+  // if (auth.hasActiveCredits) {
+  //   router.push({ name: 'Reading', params: { module } })
+  // } else {
+  //   router.push({ name: 'BuyCredits' })
+  // }
+  router.push({ name: 'Reading', params: { module } })
 }
 </script>
 
@@ -105,8 +108,11 @@ function goToService(module: string) {
               <li>
                 <RouterLink to="/register" class="hover:text-gold transition-colors">Đăng ký miễn phí</RouterLink>
               </li>
+              <!-- [PAID_FEATURE_DISABLED] — link "Mua lượt xem" đã đổi thành trang chủ
+                   Để bật lại: đổi to về "/buy-credits" và text về "Mua lượt xem"
+              -->
               <li>
-                <RouterLink to="/buy-credits" class="hover:text-gold transition-colors">Mua lượt xem</RouterLink>
+                <RouterLink to="/" class="hover:text-gold transition-colors">Xem miễn phí</RouterLink>
               </li>
               <li>
                 <RouterLink to="/history" class="hover:text-gold transition-colors">Lịch sử tra cứu</RouterLink>

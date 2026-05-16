@@ -151,27 +151,30 @@ const premiumModules = [
   { key: 'zodiac',        icon: '♈', name: 'Cung Hoàng Đạo' },
 ].filter(m => m.key !== module.value)
 
-const upsellState = computed<'active' | 'frozen' | 'empty' | 'guest'>(() => {
+// [PAID_FEATURE_DISABLED] — đã sửa lại logic upsell
+// Để bật lại: khôi phục nguyên bản upsellState / upsellHeading / upsellDesc gốc
+// const upsellState = computed<'active' | 'frozen' | 'empty' | 'guest'>(() => {
+//   if (!auth.isLoggedIn) return 'guest'
+//   if (auth.hasActiveCredits) return 'active'
+//   if (auth.hasFrozenCredits) return 'frozen'
+//   return 'empty'
+// })
+const upsellState = computed<'active' | 'guest'>(() => {
   if (!auth.isLoggedIn) return 'guest'
-  if (auth.hasActiveCredits) return 'active'
-  if (auth.hasFrozenCredits) return 'frozen'
-  return 'empty'
+  return 'active'
 })
 
 const upsellHeading = computed(() => {
-  if (upsellState.value === 'active') {
-    const bal = auth.user?.credits_balance ?? 0
-    return `Bạn còn ${bal} lượt — Xem thêm ngay`
-  }
-  if (upsellState.value === 'frozen') return 'Lượt của bạn đang bị đóng băng'
-  return 'Khám phá thêm vận mệnh của bạn'
+  // [PAID_FEATURE_DISABLED] — không còn hiển thị số lượt
+  // Để bật lại: khôi phục nguyên bản gốc
+  if (upsellState.value === 'active') return 'Khám phá thêm vận mệnh của bạn'
+  return 'Đăng nhập để xem đầy đủ miễn phí'
 })
 
 const upsellDesc = computed(() => {
-  if (upsellState.value === 'active') return 'Nhấn vào module bên dưới để xem ngay, mỗi lần xem tốn 1 lượt.'
-  if (upsellState.value === 'frozen') return 'Gia hạn để mở khoá và tiếp tục sử dụng các lượt còn lại.'
-  if (upsellState.value === 'empty') return 'Mua lượt để mở khoá các module phân tích chuyên sâu.'
-  return 'Đăng nhập và mua lượt để xem đầy đủ các module chuyên sâu.'
+  // [PAID_FEATURE_DISABLED]
+  if (upsellState.value === 'active') return 'Nhấn vào module bên dưới để xem ngay — hoàn toàn miễn phí.'
+  return 'Đăng nhập để mở khoá toàn bộ các module phân tích chuyên sâu miễn phí.'
 })
 
 // ── Helpers ────────────────────────────────────────────────
@@ -530,6 +533,9 @@ function asString(v: unknown): string {
         </div>
 
         <!-- Locked section -->
+        <!-- [PAID_FEATURE_DISABLED] — đã sửa nút "Mua lượt" thành "Đăng nhập"
+             Để bật lại: khôi phục nút "Mua lượt" và RouterLink tới /buy-credits
+        -->
         <div
           v-else-if="section.locked"
           class="relative bg-bg-card border border-border-subtle rounded-2xl overflow-hidden"
@@ -541,12 +547,9 @@ function asString(v: unknown): string {
               {{ section.teaser ?? 'Mở khoá để xem nội dung này' }}
             </p>
             <div v-if="!auth.isLoggedIn" class="flex gap-2">
-              <RouterLink to="/login"><AppButton size="sm" variant="secondary">Đăng nhập</AppButton></RouterLink>
-              <RouterLink to="/buy-credits"><AppButton size="sm">Mua lượt</AppButton></RouterLink>
+              <RouterLink to="/login"><AppButton size="sm">Đăng nhập để xem miễn phí</AppButton></RouterLink>
             </div>
-            <RouterLink v-else to="/buy-credits">
-              <AppButton size="sm">Mua lượt{{ cheapestFromLabel ? ` — ${cheapestFromLabel}` : '' }}</AppButton>
-            </RouterLink>
+            <!-- Nếu đã đăng nhập mà vẫn thấy locked: không hiển nút gì (chỉ xảy ra với free reading cũ) -->
           </div>
         </div>
 
@@ -594,14 +597,17 @@ function asString(v: unknown): string {
           </div>
 
           <!-- CTA -->
+          <!-- [PAID_FEATURE_DISABLED] — đã ẩn nút mua lượt / gia hạn
+               Để bật lại: khôi phục nguyên bản các RouterLink tới /buy-credits
           <RouterLink v-if="upsellState === 'frozen'" to="/buy-credits">
             <AppButton size="lg" class="w-full">🔥 Gia hạn lượt — tiếp tục xem ngay</AppButton>
           </RouterLink>
           <RouterLink v-else-if="upsellState === 'empty'" to="/buy-credits">
             <AppButton size="lg" class="w-full">⚡ {{ cheapestBuyLabel || 'Mua lượt ngay' }} — Xem ngay</AppButton>
           </RouterLink>
-          <RouterLink v-else-if="upsellState === 'guest'" to="/login">
-            <AppButton size="lg" class="w-full" variant="secondary">Đăng nhập để bắt đầu</AppButton>
+          -->
+          <RouterLink v-if="upsellState === 'guest'" to="/login">
+            <AppButton size="lg" class="w-full" variant="secondary">Đăng nhập để xem miễn phí</AppButton>
           </RouterLink>
         </div>
       </div>

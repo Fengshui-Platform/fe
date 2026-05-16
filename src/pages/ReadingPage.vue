@@ -85,14 +85,15 @@ async function submit() {
     router.push({ name: 'Login', query: { redirect: route.fullPath } })
     return
   }
-  if (auth.user?.credits_status !== 'active') {
-    ui.toast.warning('Bạn cần có lượt xem còn hiệu lực. Mua lượt để tiếp tục.')
-    router.push({ name: 'BuyCredits' })
-    return
-  }
-
   isLoading.value = true
   try {
+    // [PAID_FEATURE_DISABLED] — đã bỏ kiểm tra credits_status
+    // Để bật lại: uncomment khối kiểm tra phía dưới
+    // if (auth.user?.credits_status !== 'active') {
+    //   ui.toast.warning('Bạn cần có lượt xem còn hiệu lực. Mua lượt để tiếp tục.')
+    //   router.push({ name: 'BuyCredits' })
+    //   return
+    // }
     const input: ReadingInputDto = {
       full_name:  form.full_name.trim(),
       birth_date: form.birth_date,
@@ -114,17 +115,19 @@ async function submit() {
     router.push({ name: 'Result' })
   } catch (err) {
     const e = err as AxiosError<{ error?: { code?: string; message?: string } }>
-    const code = e.response?.data?.error?.code
-    if (e.response?.status === 402) {
-      if (code === 'CREDITS_FROZEN') {
-        ui.toast.warning('Lượt của bạn đang bị đóng băng. Mua thêm để giải băng.')
-      } else {
-        ui.toast.warning('Bạn đã hết lượt xem. Mua thêm để tiếp tục.')
-      }
-      router.push({ name: 'BuyCredits' })
-    } else {
-      ui.toast.error(e.response?.data?.error?.message ?? 'Có lỗi xảy ra, vui lòng thử lại')
-    }
+    // const code = e.response?.data?.error?.code
+    // [PAID_FEATURE_DISABLED] — đã bỏ xử lý lỗi 402 (hết lượt)
+    // Để bật lại: uncomment khối if (e.response?.status === 402) {...}
+    // if (e.response?.status === 402) {
+    //   if (code === 'CREDITS_FROZEN') {
+    //     ui.toast.warning('Lượt của bạn đang bị đóng băng. Mua thêm để giải băng.')
+    //   } else {
+    //     ui.toast.warning('Bạn đã hết lượt xem. Mua thêm để tiếp tục.')
+    //   }
+    //   router.push({ name: 'BuyCredits' })
+    // } else {
+    ui.toast.error(e.response?.data?.error?.message ?? 'Có lỗi xảy ra, vui lòng thử lại')
+    // }
   } finally {
     isLoading.value = false
   }
@@ -154,9 +157,12 @@ if (!VALID_MODULES.includes(module.value)) {
         <h1 class="font-serif text-3xl gradient-text-gold mb-2">{{ moduleLabel }}</h1>
         <p class="text-text-secondary text-sm max-w-sm mx-auto">{{ MODULE_DESC[module] }}</p>
 
+        <!-- [PAID_FEATURE_DISABLED] — badge số lượt đã đổi thành "Miễn phí"
+             Để bật lại: thay text dưới bằng "1 lượt · Bạn còn {{ auth.user?.credits_balance ?? 0 }} lượt"
+        -->
         <div class="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-gold/10 border border-gold/25 rounded-full">
           <span class="text-gold text-sm">✦</span>
-          <span class="text-gold text-xs font-medium">1 lượt · Bạn còn {{ auth.user?.credits_balance ?? 0 }} lượt</span>
+          <span class="text-gold text-xs font-medium">Miễn phí · Chỉ cần đăng nhập</span>
         </div>
       </div>
 
@@ -294,8 +300,11 @@ if (!VALID_MODULES.includes(module.value)) {
               </AppButton>
             </form>
 
+            <!-- [PAID_FEATURE_DISABLED] — text đã đổi
+                 Để bật lại: thay text thành "Sẽ tiêu 1 lượt · Kết quả được lưu trong lịch sử"
+            -->
             <p class="text-xs text-text-muted text-center mt-4">
-              Sẽ tiêu 1 lượt · Kết quả được lưu trong lịch sử
+              Miễn phí · Kết quả được lưu trong lịch sử
             </p>
           </div>
         </div>
