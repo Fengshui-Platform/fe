@@ -51,14 +51,16 @@ async function submit() {
       for_other: isForOther.value || undefined,
     }
 
-    if (auth.hasActiveCredits) {
-      // User has active credits → skip free, return full paid result (no locked sections)
+    // [PAID_FEATURE_DISABLED] — Giờ tất cả user đăng nhập được xem miễn phí bản đầy đủ
+    // Để phục hồi: thay `auth.isLoggedIn` lại bằng `auth.hasActiveCredits`
+    if (auth.isLoggedIn) {
+      // Đã đăng nhập → gọi paidReading (đã bỏ giới hạn số dư phía API)
       const { readingId, result } = await readingService.paidReading('numerology', input)
       readingStore.setResult(readingId, 'numerology', result, input)
       await auth.fetchMe()
       router.push({ name: 'Result' })
     } else {
-      // No credits or not logged in → try free reading
+      // Chưa đăng nhập → free reading giới hạn 1 lần/ngày
       const { readingId, result } = await readingService.freeReading('numerology', input)
       readingStore.setResult(readingId, 'numerology', result, input)
       router.push({ name: 'Result' })
@@ -68,18 +70,12 @@ async function submit() {
     const code = e.response?.data?.error?.code
     if (code === 'FREE_LIMIT') {
       if (!auth.isLoggedIn) {
-        ui.toast.warning('Bạn đã dùng hết lượt miễn phí hôm nay. Đăng nhập và mua lượt để xem đầy đủ.')
+        // [PAID_FEATURE_DISABLED] — Đăng nhập để xem miễn phí không giới hạn
+        ui.toast.warning('Bạn đã dùng hết lượt miễn phí hôm nay. Đăng nhập để xem đầy đủ không giới hạn.')
+        router.push({ name: 'Login' })
       } else {
-        ui.toast.warning('Bạn đã dùng hết lượt miễn phí hôm nay. Mua lượt để xem đầy đủ không giới hạn.')
-        router.push({ name: 'BuyCredits' })
+        ui.toast.error(e.response?.data?.error?.message ?? 'Có lỗi xảy ra, vui lòng thử lại')
       }
-    } else if (e.response?.status === 402) {
-      if (code === 'CREDITS_FROZEN') {
-        ui.toast.warning('Lượt của bạn đang bị đóng băng. Gia hạn để tiếp tục.')
-      } else {
-        ui.toast.warning('Bạn đã hết lượt xem. Mua thêm để tiếp tục.')
-      }
-      router.push({ name: 'BuyCredits' })
     } else {
       ui.toast.error(e.response?.data?.error?.message ?? 'Có lỗi xảy ra, vui lòng thử lại')
     }
@@ -171,7 +167,7 @@ function goToModule(mod: typeof modules[0]) {
                 Thần Số Học
               </h2>
               <p class="text-xs text-white/50 tracking-wider uppercase">
-                {{ auth.hasActiveCredits ? 'Luận giải đầy đủ · 1 lượt' : 'Miễn phí · 1 lần / ngày' }}
+                {{ auth.isLoggedIn ? 'Đăng nhập · Xem đầy đủ miễn phí' : 'Miễn phí · 1 lần / ngày' }}
               </p>
             </div>
 
@@ -228,9 +224,6 @@ function goToModule(mod: typeof modules[0]) {
                 <template v-if="isLoading">
                   Đang luận giải...
                 </template>
-                <template v-else-if="auth.hasActiveCredits">
-                  ✦ Xem đầy đủ — 1 lượt
-                </template>
                 <template v-else>
                   ✦ Xem ngay — Miễn phí
                 </template>
@@ -238,11 +231,11 @@ function goToModule(mod: typeof modules[0]) {
             </form>
 
             <p class="text-xs text-white/40 text-center mt-4 leading-relaxed">
-              <template v-if="auth.hasActiveCredits">
-                Tốn 1 lượt · Kết quả đầy đủ · Còn {{ auth.user?.credits_balance }} lượt
+              <template v-if="auth.isLoggedIn">
+                Miễn phí · Không giới hạn · Kết quả được lưu
               </template>
               <template v-else>
-                Miễn phí 1 lần / ngày · Không cần đăng ký
+                Miễn phí 1 lần / ngày · Đăng nhập để xem không giới hạn
               </template>
             </p>
           </div>
@@ -279,8 +272,11 @@ function goToModule(mod: typeof modules[0]) {
           <h2 class="font-serif text-4xl md:text-5xl text-text-primary mb-4">
             Thiên Cơ <span class="gradient-text-celestial">Huyền Học</span>
           </h2>
+        <!-- [PAID_FEATURE_DISABLED] description đã được đổi
+             Để bật lại: đổi text về "6 bộ môn phân tích chuyên sâu — trả phí 1 lượt, cá nhân hoá hoàn toàn"
+        -->
           <p class="text-text-secondary max-w-lg mx-auto">
-            6 bộ môn phân tích chuyên sâu — trả phí 1 lượt, cá nhân hoá hoàn toàn
+            6 bộ môn phân tích chuyên sâu — miễn phí, chỉ cần đăng nhập
           </p>
         </div>
 
@@ -305,6 +301,9 @@ function goToModule(mod: typeof modules[0]) {
                 <span :class="`text-xs px-2 py-0.5 rounded-full border font-serif tracking-wider ${mod.elemClass}`">
                   {{ mod.element }}
                 </span>
+                <!-- [PAID_FEATURE_DISABLED] badge "1 lượt" đã đổi thành "Miễn phí"
+                     Để bật lại: thay `Miễn phí` bằng `1 lượt`
+                -->
                 <span
                   v-if="mod.free"
                   class="text-xs px-2 py-0.5 bg-emerald-500/12 text-emerald-300 border border-emerald-500/25 rounded-full"
@@ -313,9 +312,9 @@ function goToModule(mod: typeof modules[0]) {
                 </span>
                 <span
                   v-else
-                  class="text-xs px-2 py-0.5 bg-gold/8 text-gold/80 border border-gold/20 rounded-full"
+                  class="text-xs px-2 py-0.5 bg-emerald-500/12 text-emerald-300 border border-emerald-500/25 rounded-full"
                 >
-                  1 lượt
+                  Miễn phí
                 </span>
               </div>
             </div>
@@ -334,7 +333,8 @@ function goToModule(mod: typeof modules[0]) {
           </button>
         </div>
 
-        <!-- CTA -->
+        <!-- [PAID_FEATURE_DISABLED] CTA mua lượt đã được ẩn
+             Để bật lại: uncomment đoạn code dưới đây
         <div class="text-center mt-12">
           <RouterLink to="/buy-credits">
             <AppButton size="lg">
@@ -343,6 +343,7 @@ function goToModule(mod: typeof modules[0]) {
           </RouterLink>
           <p class="text-xs text-text-muted mt-3">Không giới hạn · Không hết hạn trong 50 ngày · Hoàn tiền nếu lỗi</p>
         </div>
+        -->
       </div>
     </section>
 
