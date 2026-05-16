@@ -27,7 +27,7 @@ const form = reactive({
 
 const { isForOther, viewForOther, viewForSelf } = useReadingForm(() => auth.user, form)
 
-const { cheapestFromLabel, fetchIfNeeded } = useCheapestPackage()
+const { fetchIfNeeded } = useCheapestPackage()
 onMounted(fetchIfNeeded)
 
 const errors = reactive({ full_name: '', birth_date: '' })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { userService } from '@/services/user.service'
@@ -10,7 +10,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
 import AppModal from '@/components/common/AppModal.vue'
-import AppBadge from '@/components/common/AppBadge.vue'
+// import AppBadge from '@/components/common/AppBadge.vue'
 import { formatDate } from '@/utils/format'
 
 const router = useRouter()
