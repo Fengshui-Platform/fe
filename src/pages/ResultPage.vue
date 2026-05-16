@@ -15,7 +15,7 @@ const router = useRouter()
 const readingStore = useReadingStore()
 const auth = useAuthStore()
 
-const { cheapestFromLabel, cheapestBuyLabel, fetchIfNeeded } = useCheapestPackage()
+const { fetchIfNeeded } = useCheapestPackage()
 onMounted(fetchIfNeeded)
 
 const rawResult = computed(() => readingStore.currentResult)

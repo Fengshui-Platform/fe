@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { authService } from '@/services/auth.service'
-import AppBadge from '@/components/common/AppBadge.vue'
+// import AppBadge from '@/components/common/AppBadge.vue'
 
 const auth = useAuthStore()
 const ui = useUIStore()
 const router = useRouter()
 const menuOpen = ref(false)
 
-const creditsLabel = computed(() => {
-  if (!auth.user) return null
-  const { credits_balance, credits_status } = auth.user
-  if (credits_status === 'active')  return `${credits_balance} lượt`
-  if (credits_status === 'frozen')  return `${credits_balance} lượt (đóng băng)`
-  return 'Hết lượt'
-})
+// const creditsLabel = computed(() => {
+//   if (!auth.user) return null
+//   const { credits_balance, credits_status } = auth.user
+//   if (credits_status === 'active')  return `${credits_balance} lượt`
+//   if (credits_status === 'frozen')  return `${credits_balance} lượt (đóng băng)`
+//   return 'Hết lượt'
+// })
 
 
 async function logout() {
