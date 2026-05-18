@@ -6,13 +6,14 @@ const auth = useAuthStore()
 const router = useRouter()
 
 const navItems = [
-  { icon: '📊', label: 'Tổng quan',      name: 'AdminDashboard' },
-  { icon: '👥', label: 'Người dùng',     name: 'AdminUsers' },
-  { icon: '📖', label: 'Lịch sử xem',   name: 'AdminReadings' },
-  { icon: '💳', label: 'Đơn mua lượt',  name: 'AdminOrders' },
-  { icon: '📦', label: 'Gói lượt',       name: 'AdminPackages' },
-  { icon: '⚙️', label: 'Mô hình',         name: 'AdminAIModels' },
-  { icon: '⚙️', label: 'Cài đặt',       name: 'AdminSettings' },
+  { icon: '📊', label: 'Tổng quan',        name: 'AdminDashboard' },
+  { icon: '📈', label: 'Traffic & Ads',    name: 'AdminTraffic' },
+  { icon: '👥', label: 'Người dùng',       name: 'AdminUsers' },
+  { icon: '📖', label: 'Lịch sử xem',     name: 'AdminReadings' },
+  { icon: '💳', label: 'Đơn mua lượt',    name: 'AdminOrders' },
+  { icon: '📦', label: 'Gói lượt',         name: 'AdminPackages' },
+  { icon: '🤖', label: 'Mô hình AI',       name: 'AdminAIModels' },
+  { icon: '⚙️', label: 'Cài đặt',         name: 'AdminSettings' },
 ]
 
 async function logout() {

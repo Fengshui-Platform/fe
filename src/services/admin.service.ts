@@ -217,4 +217,38 @@ export const adminService = {
   async updateSettings(settings: Record<string, string>): Promise<void> {
     await api.put('/admin/settings', settings)
   },
+
+  async getTrafficOverview(from: string, to: string) {
+    const { data } = await api.get('/admin/traffic/overview', { params: { from, to } })
+    return data.data as {
+      total_views: number; unique_sessions: number; logged_in_users: number
+      login_rate: number; total_events: number; reading_starts: number
+      buy_initiations: number; period: { from: string; to: string }
+    }
+  },
+
+  async getTrafficDaily(from: string, to: string) {
+    const { data } = await api.get('/admin/traffic/daily', { params: { from, to } })
+    return data.data as Array<{ date: string; total_views: number; unique_sessions: number; logged_in_users: number }>
+  },
+
+  async getTrafficPages(from: string, to: string, limit = 10) {
+    const { data } = await api.get('/admin/traffic/pages', { params: { from, to, limit } })
+    return data.data as Array<{ page: string; views: number }>
+  },
+
+  async getTrafficFeatures(from: string, to: string) {
+    const { data } = await api.get('/admin/traffic/features', { params: { from, to } })
+    return data.data as Array<{ event_type: string; module: string | null; count: number }>
+  },
+
+  async getTrafficFunnel(from: string, to: string) {
+    const { data } = await api.get('/admin/traffic/funnel', { params: { from, to } })
+    return data.data as { steps: Array<{ step: string; count: number; pct: number }>; period: { from: string; to: string } }
+  },
+
+  async getTrafficRetention(from: string, to: string) {
+    const { data } = await api.get('/admin/traffic/retention', { params: { from, to } })
+    return data.data as Array<{ date: string; returning: number }>
+  },
 }

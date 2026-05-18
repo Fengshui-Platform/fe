@@ -7,6 +7,7 @@ import { authService } from '@/services/auth.service'
 import { type AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
+import { useTracker } from '@/composables/useTracker'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -18,6 +19,7 @@ const isLoading = ref(false)
 const showPassword = ref(false)
 const emailNotVerified = ref(false)
 const resendLoading = ref(false)
+const { trackEvent } = useTracker()
 
 function validate() {
   errors.email   = /\S+@\S+\.\S+/.test(form.email) ? '' : 'Email không hợp lệ'
@@ -33,6 +35,7 @@ async function submit() {
   try {
     const user = await authService.login({ email: form.email, password: form.password })
     auth.setUser(user)
+    trackEvent('login_success')
     ui.toast.success('Đăng nhập thành công!')
     const redirect = (router.currentRoute.value.query.redirect as string) || '/'
     router.push(redirect)

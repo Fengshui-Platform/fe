@@ -10,13 +10,20 @@ import { getWesternZodiacSign } from '@/utils/zodiac'
 import { usePageTheme } from '@/composables/usePageTheme'
 import { TIME_FILTERS } from '@/config/themeConfig'
 import { useCheapestPackage } from '@/composables/useCheapestPackage'
+import { useTracker } from '@/composables/useTracker'
 
 const router = useRouter()
 const readingStore = useReadingStore()
 const auth = useAuthStore()
+const { trackEvent } = useTracker()
 
 const { fetchIfNeeded } = useCheapestPackage()
-onMounted(fetchIfNeeded)
+onMounted(() => {
+  fetchIfNeeded()
+  if (readingStore.currentModule) {
+    trackEvent('reading_complete', readingStore.currentModule)
+  }
+})
 
 const rawResult = computed(() => readingStore.currentResult)
 const input     = computed(() => readingStore.currentInput)
