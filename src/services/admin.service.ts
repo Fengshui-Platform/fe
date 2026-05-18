@@ -259,7 +259,6 @@ export const adminService = {
       logged_in: number
       anonymous: number
       pages: Array<{ page: string; cnt: number }>
-      updated_at: string
     }
   },
 
