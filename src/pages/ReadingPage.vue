@@ -13,6 +13,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppDatePicker from '@/components/common/AppDatePicker.vue'
 import { useReadingForm } from '@/composables/useReadingForm'
+import { useTracker } from '@/composables/useTracker'
 
 const route = useRoute()
 const router = useRouter()
@@ -52,6 +53,7 @@ const form = reactive<ReadingInputDto & { partner_name: string; partner_birth_da
 })
 
 const { isForOther, viewForOther, viewForSelf } = useReadingForm(() => auth.user, form)
+const { trackEvent } = useTracker()
 
 const errors = reactive<Record<string, string>>({})
 const isLoading = ref(false)
@@ -109,6 +111,7 @@ async function submit() {
       input.house_direction = form.house_direction
     }
 
+    trackEvent('reading_start', module.value, { is_free: false })
     const { readingId, result } = await readingService.paidReading(module.value, input)
     readingStore.setResult(readingId, module.value, result, input)
     await auth.fetchMe()

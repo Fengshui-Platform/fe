@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useTracker } from '@/composables/useTracker'
 import UserLayout from '@/components/layout/UserLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -49,6 +50,7 @@ const router = createRouter({
         { path: 'credit-packages', name: 'AdminPackages', component: () => import('@/pages/admin/CreditPackagesPage.vue') },
         { path: 'ai-models',      name: 'AdminAIModels',  component: () => import('@/pages/admin/AIModelsPage.vue') },
         { path: 'settings',       name: 'AdminSettings',  component: () => import('@/pages/admin/SettingsPage.vue') },
+        { path: 'traffic',        name: 'AdminTraffic',   component: () => import('@/pages/admin/TrafficPage.vue') },
       ],
     },
 
@@ -74,6 +76,12 @@ router.beforeEach(async to => {
   if (to.meta.guestOnly && auth.isLoggedIn) {
     return { name: 'Home' }
   }
+})
+
+router.afterEach(to => {
+  const { trackPage } = useTracker()
+  const pageName = typeof to.name === 'string' ? to.name : to.path
+  trackPage(pageName)
 })
 
 export default router

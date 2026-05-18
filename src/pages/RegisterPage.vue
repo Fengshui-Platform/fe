@@ -5,12 +5,14 @@ import { authService } from '@/services/auth.service'
 import { type AxiosError } from 'axios'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
+import { useTracker } from '@/composables/useTracker'
 
 const form = reactive({ full_name: '', email: '', password: '', phone: '' })
 const errors = reactive({ full_name: '', email: '', password: '', general: '' })
 const isLoading = ref(false)
 const registered = ref(false)
 const showPassword = ref(false)
+const { trackEvent } = useTracker()
 
 function validate() {
   errors.full_name = form.full_name.trim() ? '' : 'Vui lòng nhập họ tên'
@@ -30,6 +32,7 @@ async function submit() {
       password: form.password,
       phone: form.phone || undefined,
     })
+    trackEvent('register_success')
     registered.value = true
   } catch (err) {
     const e = err as AxiosError<{ error?: { message?: string } }>

@@ -10,9 +10,11 @@ import AppBadge from '@/components/common/AppBadge.vue'
 import AppSpinner from '@/components/common/AppSpinner.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import { formatCurrency, timeUntil } from '@/utils/format'
+import { useTracker } from '@/composables/useTracker'
 
 const auth = useAuthStore()
 const ui = useUIStore()
+const { trackEvent } = useTracker()
 
 const packages = ref<CreditPackage[]>([])
 const isLoading = ref(true)
@@ -29,6 +31,7 @@ const countdown = ref('')
 const countdownTimer = ref<ReturnType<typeof setInterval> | null>(null)
 
 onMounted(async () => {
+  trackEvent('buy_credit_view')
   try {
     packages.value = await creditService.getPackages()
   } catch {
@@ -56,6 +59,7 @@ async function selectPackage(pkg: CreditPackage) {
   selectedPkg.value = pkg
   ordering.value = true
   try {
+    trackEvent('buy_credit_init', undefined, { package_id: pkg.id, price: pkg.price, credits: pkg.credits })
     const data = await creditService.createOrder(pkg.id)
     qrData.value = data
     showQR.value = true
