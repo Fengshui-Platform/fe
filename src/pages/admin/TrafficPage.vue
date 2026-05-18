@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import type { ApexOptions } from 'apexcharts'
 import { adminService } from '@/services/admin.service'
@@ -40,6 +40,30 @@ const funnel    = ref<Awaited<ReturnType<typeof adminService.getTrafficFunnel>> 
 
 const loading = ref(false)
 
+// ── Online users (live, polls every 30s) ─────────────────────
+type OnlineData = Awaited<ReturnType<typeof adminService.getOnlineUsers>>
+const onlineData   = ref<OnlineData | null>(null)
+const onlineTimer  = ref<ReturnType<typeof setInterval> | null>(null)
+
+async function fetchOnline() {
+  try {
+    onlineData.value = await adminService.getOnlineUsers()
+  } catch { /* silent — non-critical */ }
+}
+
+// ── Hourly chart ─────────────────────────────────────────────
+type HourlyMode = 'today' | 'avg'
+const hourlyMode = ref<HourlyMode>('today')
+const hourlyDays = ref(30)
+type HourlyData = Awaited<ReturnType<typeof adminService.getHourlyTraffic>>
+const hourlyData = ref<HourlyData | null>(null)
+
+async function fetchHourly() {
+  try {
+    hourlyData.value = await adminService.getHourlyTraffic(hourlyMode.value, hourlyDays.value)
+  } catch { /* silent */ }
+}
+
 async function fetchAll() {
   loading.value = true
   try {
@@ -62,9 +86,19 @@ async function fetchAll() {
   }
 }
 
-onMounted(fetchAll)
+onMounted(() => {
+  fetchAll()
+  fetchOnline()
+  fetchHourly()
+  onlineTimer.value = setInterval(fetchOnline, 30_000)
+})
+
+onUnmounted(() => {
+  if (onlineTimer.value) clearInterval(onlineTimer.value)
+})
 
 watch([dateFrom, dateTo], fetchAll)
+watch([hourlyMode, hourlyDays], fetchHourly)
 
 // ── Chart base config ────────────────────────────────────────
 const baseAxis = {
@@ -131,6 +165,41 @@ const featuresOptions = computed<ApexOptions>(() => ({
   dataLabels: { enabled: false },
 }))
 const featuresSeries = computed(() => [{ name: 'Số lần', data: featureSummary.value.map(e => e[1]) }])
+
+// ── Hourly chart config ──────────────────────────────────────
+const HOURS_24 = Array.from({ length: 24 }, (_, i) => `${i}h`)
+
+const hourlyValues = computed(() => {
+  const rows = hourlyData.value?.data ?? []
+  return rows.map(r => r.sessions ?? r.avg_sessions ?? 0)
+})
+
+const hourlyPeak = computed(() => Math.max(...hourlyValues.value, 0))
+
+// One color per bar: gold for peak hour, mystic for rest
+const hourlyColors = computed<string[]>(() =>
+  hourlyValues.value.map(v => v === hourlyPeak.value && v > 0 ? '#f5c842' : '#7c3aed')
+)
+
+const hourlyOptions = computed<ApexOptions>(() => ({
+  ...baseChart,
+  chart: { ...baseChart.chart, type: 'bar', id: 'traffic-hourly' },
+  colors: hourlyColors.value,
+  plotOptions: { bar: { distributed: true, borderRadius: 3, columnWidth: '70%' } },
+  xaxis: { ...baseAxis, categories: HOURS_24 },
+  yaxis: { labels: { style: { colors: '#9590b8', fontSize: '11px' }, formatter: (v: number) => String(Math.round(v)) } },
+  dataLabels: { enabled: false },
+  legend: { show: false },
+  tooltip: {
+    theme: 'dark',
+    y: { formatter: (v: number) => hourlyMode.value === 'today' ? `${v} sessions` : `TB ${v} sessions/ngày` },
+  },
+}))
+
+const hourlySeries = computed(() => [{
+  name: hourlyMode.value === 'today' ? 'Sessions hôm nay' : 'Trung bình sessions/ngày',
+  data: hourlyValues.value,
+}])
 
 // ── CSV export ───────────────────────────────────────────────
 function exportCsv() {
@@ -236,6 +305,58 @@ function labelFeature(event_type: string, module: string | null): string {
       </div>
     </div>
 
+    <!-- Online users widget (always visible, live) -->
+    <div class="bg-bg-card border border-emerald-500/30 rounded-xl p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <!-- Left: headline -->
+        <div class="flex items-center gap-3">
+          <div class="relative flex items-center justify-center w-10 h-10">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400/20 animate-ping" />
+            <span class="relative inline-flex w-5 h-5 rounded-full bg-emerald-400" />
+          </div>
+          <div>
+            <p class="text-xs text-text-muted">Đang trực tuyến ngay bây giờ</p>
+            <p class="text-3xl font-bold text-emerald-400 leading-none mt-0.5">
+              {{ onlineData?.total ?? '—' }}
+              <span class="text-sm font-normal text-text-muted ml-1">người</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Middle: breakdown -->
+        <div class="flex gap-6">
+          <div class="text-center">
+            <p class="text-xl font-bold text-mystic-glow">{{ onlineData?.logged_in ?? '—' }}</p>
+            <p class="text-xs text-text-muted mt-0.5">Đã đăng nhập</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-bold text-text-secondary">{{ onlineData?.anonymous ?? '—' }}</p>
+            <p class="text-xs text-text-muted mt-0.5">Khách ẩn danh</p>
+          </div>
+        </div>
+
+        <!-- Right: top pages online -->
+        <div class="text-xs text-text-muted space-y-1 min-w-48">
+          <p class="text-text-secondary font-medium mb-1.5">Đang xem trang:</p>
+          <div
+            v-for="pg in (onlineData?.pages ?? []).slice(0, 4)"
+            :key="pg.page"
+            class="flex justify-between gap-4"
+          >
+            <span class="truncate">{{ labelPage(pg.page) }}</span>
+            <span class="text-emerald-400 font-medium shrink-0">{{ pg.cnt }}</span>
+          </div>
+          <p v-if="!onlineData" class="text-text-muted italic">Đang tải...</p>
+        </div>
+
+        <!-- Live badge -->
+        <div class="flex items-center gap-1.5 text-xs text-emerald-400/70">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Cập nhật mỗi 30s
+        </div>
+      </div>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-16">
       <AppSpinner />
@@ -283,6 +404,55 @@ function labelFeature(event_type: string, module: string | null): string {
           :series="dailySeries"
         />
         <p v-else class="text-center text-text-muted text-sm py-12">Chưa có dữ liệu trong khoảng thời gian này</p>
+      </div>
+
+      <!-- Hourly distribution chart -->
+      <div class="bg-bg-card border border-border-subtle rounded-xl p-5">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <h2 class="text-sm font-semibold text-text-primary">Phân bố truy cập theo khung giờ</h2>
+          <div class="flex items-center gap-2">
+            <!-- Mode tabs -->
+            <div class="flex gap-1 p-1 bg-bg-surface border border-border-subtle rounded-lg">
+              <button
+                class="px-3 py-1 text-xs rounded-md transition-all"
+                :class="hourlyMode === 'today' ? 'bg-mystic text-white' : 'text-text-secondary hover:text-text-primary'"
+                @click="hourlyMode = 'today'"
+              >Hôm nay</button>
+              <button
+                class="px-3 py-1 text-xs rounded-md transition-all"
+                :class="hourlyMode === 'avg' ? 'bg-mystic text-white' : 'text-text-secondary hover:text-text-primary'"
+                @click="hourlyMode = 'avg'"
+              >Trung bình</button>
+            </div>
+            <!-- Days selector (avg only) -->
+            <select
+              v-if="hourlyMode === 'avg'"
+              v-model="hourlyDays"
+              class="bg-bg-elevated border border-border-subtle text-text-primary text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-mystic"
+            >
+              <option :value="7">7 ngày</option>
+              <option :value="30">30 ngày</option>
+              <option :value="90">90 ngày</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Peak hour callout -->
+        <div v-if="hourlyPeak > 0" class="flex items-center gap-2 mb-3 text-xs">
+          <span class="px-2 py-0.5 rounded-full bg-gold/15 border border-gold/30 text-gold font-medium">
+            ⭐ Giờ cao điểm: {{ HOURS_24[hourlyValues.indexOf(hourlyPeak)] }}
+            ({{ hourlyMode === 'today' ? hourlyPeak + ' sessions' : 'TB ' + hourlyPeak + ' sessions/ngày' }})
+          </span>
+          <span class="text-text-muted">— Chạy ads vào khung này hiệu quả nhất</span>
+        </div>
+
+        <VueApexCharts
+          type="bar"
+          height="220"
+          :options="hourlyOptions"
+          :series="hourlySeries"
+          :key="hourlyMode + hourlyDays"
+        />
       </div>
 
       <!-- Pages + Features charts (2 columns) -->

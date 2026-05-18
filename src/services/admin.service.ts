@@ -251,4 +251,24 @@ export const adminService = {
     const { data } = await api.get('/admin/traffic/retention', { params: { from, to } })
     return data.data as Array<{ date: string; returning: number }>
   },
+
+  async getOnlineUsers() {
+    const { data } = await api.get('/admin/traffic/online')
+    return data.data as {
+      total: number
+      logged_in: number
+      anonymous: number
+      pages: Array<{ page: string; cnt: number }>
+      updated_at: string
+    }
+  },
+
+  async getHourlyTraffic(mode: 'today' | 'avg', days = 30) {
+    const { data } = await api.get('/admin/traffic/hourly', { params: { mode, days } })
+    return data.data as {
+      mode: 'today' | 'avg'
+      days?: number
+      data: Array<{ hour: number; sessions?: number; avg_sessions?: number }>
+    }
+  },
 }

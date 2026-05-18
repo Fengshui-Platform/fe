@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import AdminSidebar from '@/components/layout/AdminSidebar.vue'
+import { useOnlineTracker } from '@/composables/useTracker'
+
+useOnlineTracker()
 </script>
 
 <template>
